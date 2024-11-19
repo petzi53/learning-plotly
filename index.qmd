@@ -1,0 +1,191 @@
+# Preface {.unnumbered}
+
+::: my-watch-out
+::: my-watch-out-header
+WATCH OUT: This is my personal learning material and is therefore
+neither an accurate replication nor an authoritative textbook.
+:::
+
+::: my-watch-out-container
+I am writing this book as a text for others to read because that forces me to
+become explicit and explain all my learning outcomes more carefully.
+Please keep in mind that this text is not written by an expert but by a
+learner.
+
+Text passages with content I am already familiar I have skipped. Section
+of the original text where I needed more in-depth knowledge I have
+elaborated and added my own comments resulted from my personal research.
+
+Be warned! In spite of replicating most of the content this Quarto book
+may contain many mistakes. All the misapprehensions and errors are of
+course my own responsibility.
+:::
+:::
+
+## Content and Goals of this Book {.unnumbered}
+
+NEEDS TO BE FILLED
+
+
+## Text passages
+
+### Quotes and personal comments
+
+NEEDS TO BE FILLED
+
+
+### Glossary
+
+I am using the {**glossary**} package to create links to glossary
+entries.\]
+
+::: my-r-code
+::: my-r-code-header
+::: {#cnj-load-glossary}
+: Load glossary
+:::
+:::
+
+::: my-r-code-container
+
+
+```{r}
+#| label: load-glossary
+#| lst-label: lst-preface-load-glossary
+#| lst-cap: "Install and load the glossary package with the appropriate glossary.yml file"
+
+
+## 1. Install the glossary package:
+## https://debruine.github.io/glossary/
+
+library(glossary)
+
+## If you want to use my glossary.yml file:
+
+## 1. fork my repo
+##    https://github.com/petzi53/glossary-pb
+
+## 2. Download the `glossary.yml` file from
+##    https://github.com/petzi53/glossary-pb/blob/master/glossary.yml)
+
+## 3. Store the file on your hard disk
+##    and change the following path accordingly
+
+glossary::glossary_path("../glossary-pb/glossary.yml")
+
+```
+
+
+:::
+:::
+
+If you hover with your mouse over the double underlined links it opens
+an window with the appropriate glossary text. Try this example: `r glossary("Anderson-Darling")`. AT the end of every chapter there is a list of all glossary entries used in the file.
+
+::: my-watch-out
+::: my-watch-out-header
+WATCH OUT! Glossary entries are my personal additions and may be incomplete or even wrong!
+:::
+
+::: my-watch-out-container
+::: {layout="[10, 30]" layout-valign="center"}
+![](https://debruine.github.io/glossary/logo.png)
+
+I have added many of the glossary entries when I was working through
+other books either taking the text passage of these books I was reading
+or via an internet recherche from other resources. I have added the
+source of glossary entry, but sometimes only with an abbreviation. I still need
+still to provide a key what these abbreviation mean.
+
+Another issue is that I could not manage to provide active links. So you have to copy and paste the URL to find the reference of the glossary entry.
+:::
+
+
+:::
+:::
+
+If you fork this repository then the glossary will not
+work out of the box. Load down the `glossary.yml` file from [my
+glossary-pb GitHub
+repo](https://github.com/petzi53/glossary-pb/blob/master/glossary.yml),
+store it on your hard disk and change the path in the code chunk
+@lst-preface-load-glossary.
+
+In any case I am the only responsible person for this text, especially
+if I have used code from the resources wrongly or misunderstood a quoted
+text passage.
+
+## R Code and Datasets
+
+I am using the [Tidyverse Style
+Guide](https://style.tidyverse.org/) with a slight modification: I am using Google's recommendation to qualify the used namespace. This is important for my learning endeavor: Besides preventing conflicts with functions of identical names
+from different packages it helps me to learn (or remember) which function
+belongs to which package. I think this justifies the small overhead and
+helps to make R code chunks self-sufficient. (No previous package
+loading, or library calls in the setup chunk.) To foster learning the
+relation between function and package I embrace the package name with
+curly brakes and format it in italics.
+
+I am using the package name also for the default installation of base R.
+This wouldn't be necessary but it helps me to understand where the base
+R functions come from. What follows is a list of base R packages of the
+system library included into every installation and attached (opened) by
+default:
+
+-   {**base**}: The R Base Package
+-   {**datsets**}: The R Datasets Package
+-   {**graphics**}: The R Graphics Package
+-   {**grDevices**}: The R Graphics Devices and Support for Colours and
+    Fonts
+-   {**methods**}: Formal Methods and Classes
+-   {**stats**}: The R Stats Package
+-   {**utils**}: The R Utils Package
+
+With the exception of the base R packages I have added a short profile of every package used in this project. Most of the time these profiles are copied text from the package `DESCRIPTION` file or an accompanying web page. Sometimes I have also added in a separate section my notes about my personal experiences with package usage.
+
+
+## Resources
+
+::: {.my-resource}
+::: {.my-resource-header}
+:::::: {#lem-index-book-resources}
+: Resources used for this Quarto book
+::::::
+:::
+
+::: {.my-resource-container}
+
+NEEDS TO BE FILLED
+
+:::
+:::
+
+
+
+## Glossary
+
+```{r}
+#| label: glossary-table
+#| echo: false
+
+glossary_table()
+```
+
+------------------------------------------------------------------------
+
+## Session Info {.unnumbered}
+
+::: my-r-code
+::: my-r-code-header
+Session Info
+:::
+
+::: my-r-code-container
+```{r}
+#| label: session-info
+
+sessioninfo::session_info()
+```
+:::
+:::
+
