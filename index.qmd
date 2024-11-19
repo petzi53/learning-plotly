@@ -155,7 +155,12 @@ With the exception of the base R packages I have added a short profile of every 
 
 ::: {.my-resource-container}
 
-NEEDS TO BE FILLED
+- Online: [Interactive web-based data visualization with R, plotly, and shiny](https://plotly-r.com/)
+- Printed version: Sievert, C. (2019). Interactive web-based data visualization with R, plotly, and shiny. https://plotly-r.com/ [@sievert2019]
+- [Plotly JavaScript Open Source Graphing Library](https://plotly.com/javascript/)
+- [Plotly R Open Source Graphing Library](https://plotly.com/r/)
+- [Plotly ggplot2 Open Source Graphing Library](https://plotly.com/ggplot2/)
+
 
 :::
 :::
