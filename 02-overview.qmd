@@ -1,0 +1,892 @@
+---
+knitr: 
+    opts_chunk: 
+      code-fold: show
+      results: hold
+execute:
+    cache: true
+format: html
+---
+# Overview {#sec-02-overview}
+
+```{r}
+#| label: setup
+#| results: hold
+#| include: false
+
+base::source(file = paste0(here::here(), "/R/helper.R"))
+
+ggplot2::theme_set(ggplot2::theme_bw())
+```
+
+
+There are two main ways to creating a plotly object: 
+
+1. by transforming a {**ggplot2**} object via `plotly::ggplotly()` into a plotly object or 
+2. by directly initializing a plotly object with `plotly::plot_ly()`/`plotly::plot_geo()`/`plotly::plot_mapbox()`.
+
+Both approaches have somewhat complementary strengths and weaknesses, so it can pay off to learn both approaches.
+
+This introductory chapter outlines some over-arching concepts related to plotly in general. It also provides definitions for terminology used throughout the book and introduces some concepts useful for understanding the infrastructure behind any plotly object.
+
+::: {.callout-note #nte-unnecessary-details}
+###### Unnesseary details?
+
+> Most of these details aren’t necessarily required to get started with plotly, but it will inevitably help you get ‘un-stuck’, write better code, and do more advanced things with plotly. (p.23)
+
+Is it --- didactically speaking --- a good idea to start with not necessary details?
+:::
+
+## Intro to `plot_ly()`
+
+Any graph made with the {**plotly**} R package is powered by the JavaScript library [plotly.js](https://github.com/plotly/plotly.js). The `plotly::plot_ly()` function provides a ‘direct’ interface to plotly.js.
+
+
+### First `plot_ly()` examples
+
+
+::: {.my-code-collection}
+:::: {.my-code-collection-header}
+::::: {.my-code-collection-icon}
+:::::
+:::::: {#exm-02-intro-plotly}
+::::::
+
+::::
+
+::::{.my-code-collection-container}
+
+::: {.panel-tabset}
+
+###### Load data
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-intro-plotly}
+: Load and inspect data
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: load-data
+
+
+utils::data(diamonds, package = "ggplot2")
+
+
+base::set.seed(100)
+diamonds_sample <- tibble::as_tibble(diamonds) |> 
+  dplyr::slice_sample(n = 10000)
+```
+
+::: {.callout-caution #cau-02-memory-problems}
+###### Memory problem with big `diamonds` dataset
+
+After several calls to `plotly::plot_ly()` or `plotly::ggplotly()` I ran out of memory and the graphs didn't show up in the browser from this point on.
+
+I therefore reduced the dataset from `r nrow(diamonds)` to 10^3 rows.
+:::
+
+
+::::
+:::::
+
+
+###### First try
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-first-try}
+: First try with warning message
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-first-try
+#| fig-cap: "My first trial of a visualization with {*plotly*) worked but produced a (warning?) message."
+
+# create a visualizations of the diamonds dataset
+plotly::plot_ly(diamonds_sample, x = ~cut)
+```
+
+***
+
+**To see the big difference between a static graph and the interactivity caused by {*plotly*} move the mouse cursor over the graphic!**
+
+If we assign variable names (e.g., `cut`, `clarity`, etc.) to visual properties (e.g., `x`, `y`, `color`, etc.) within `plotly::plot_ly()`, as done in @fig-first-try, the program tries to find a sensible geometric representation of that information for us.
+
+::: {.callout-warning #wrn-02-warning-messages}
+###### What does the warning "No trace type specified" mean?
+
+As you can see I got a warning message. This happened with all three offered examples. For the first and third visualization a trace of "histogram" seems appropriate, for the second one a "histogram2d".). This message is neither mentioned in the book (first edition) nor in the online version of the book.
+
+An internet recherche uncovered [two different methods to get rid of these messages](https://github.com/plotly/plotly.R/issues/1202).
+
+1. Add the correct type as argument. For example `plotly::plot_ly(diamonds, x = ~cut, type = "histogram")`
+2. Write a small function:
+
+``` R
+suppressPlotlyMessage <- function(p) {
+  suppressMessages(plotly_build(p))
+}
+
+suppressPlotlyMessage(plotly::plot_ly(diamonds, x = ~cut))
+```
+
+The first one is easier to use and it is the more general method too.
+:::
+
+:::::{.my-remark}
+:::{.my-remark-header}
+This difference between documentation and running code is annoying. It makes people completely new to {*plotly*} uncertain, especially as this is the first example in the tutorial!
+:::
+
+:::::
+
+
+
+
+::::
+:::::
+
+
+###### Second try
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-second-try}
+: Second try without warning messages
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-second-try
+#| fig-cap: "Three examples of visualizing categorical data with `plotly::plot_ly()`: (top) mapping `cut` to `x` yields a bar chart, (middle) mapping `cut` & `clarity` to `x` & `y` yields a heatmap, and (bottom) mapping `cut` & `clarity` to `x` & `color` yields a dodged bar chart."
+#| results: hold
+
+# create three visualizations of the diamonds dataset
+plotly::plot_ly(diamonds_sample, x = ~cut, type = "histogram")
+plotly::plot_ly(diamonds_sample, x = ~cut, y = ~clarity, type = "histogram2d")
+plotly::plot_ly(diamonds_sample, x = ~cut, color = ~clarity, colors = "Accent", type = "histogram") |> 
+    plotly::config(doubleClickDelay = 1000)
+```
+
+***
+
+Here I have added the correct type to the `plotly::plot_ly()` argument to get rid of the warning message.
+
+In the bottom panel of @fig-second-try `color` is used to map each level of diamond clarity to a different color, then `colors` is used to specify the range of colors (which, in this case, the "Accent" color palette from the {**RColorBrewer**} package, but one can also supply custom color codes or a color palette function like `grDevices::colorRamp()`).
+
+::: {.callout-note #nte-change-double-click-delay}
+###### Double click delay time changed
+
+In the last example I have changed the delay for double clicks. This setting determines the maximum delay between two consecutive clicks to be interpreted as a double-click, measured in milliseconds. By default, the timing is set to 300 ms (less than half a second). My code sets the double-click delay to 1000 milliseconds (1 second).
+
+Try the following: Zoom into the graphics by holding the mouse button and dragging the cursor to the desired zoom rectangle. Then return to the original graphics by a relaxed double click. Try this for the first and for the third graphics. You will see that in the first graph you must provide a double click with a very short delay to return to the full view, whereas in the third graphics it is much easier.
+:::
+
+
+
+
+::::
+:::::
+
+###### Using pipe
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-using-pipe}
+: Use pipe to modify the generic `plotly::plot_ly()` call
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-using-pipe
+#| fig-cap: "Create graphics with the native pipe adding a specific layer"
+
+diamonds_sample |> 
+  plotly::plot_ly(x = ~cut, type = "histogram")  |> 
+  plotly::layout(title = "My beautiful histogram")
+```
+
+***
+
+(Almost) every function anticipates a plotly object as input to it’s first argument and returns a modified version of that plotly object. Furthermore, that modification is completely determined by the input values to the function (i.e., it doesn’t rely on any side-effects, unlike, for example, base R graphics). 
+
+Here I have added with `plotly::layout()` to modify by adding parts to the `plotly::plot_ly()` function using the (native) pipe (`|>`) which was introduced into R with version 4.1.0, released May 2021. The base pipe operator allows you to direct the left-hand side object as the first argument into the function call on the right-hand side. This facilitates creating and reading code. (But note that there are [some differences](https://www.tidyverse.org/blog/2023/04/base-vs-magrittr-pipe/) to the {**magrittr**} pipe used in the Plotly book.)
+
+There is a huge amount of different arguments for the `plotly::layout()` function (See R [Figure Reference: layout](https://plotly.com/r/reference/layout/).
+::::
+:::::
+
+:::
+
+::::
+:::::
+
+
+The `plotly::plot_ly()` function has numerous arguments that are unique to the R package (e.g., `color`, `stroke`, `span`, `symbol`, `linetype`, etc) and make it easier to encode data variables (e.g., diamond clarity) as visual properties (e.g., `color`). By default, these arguments map values of a data variable to a visual range defined by the plural form of the argument.
+
+### Mapping colors directly
+
+Since these arguments map data values to a visual range by default, you will obtain unexpected results if you try to specify the visual range directly, as in tab "wrong" of @exm-02-map-data-values-directly. 
+
+If you want to specify the visual range directly, use the `base::I()` function to declare this value to be taken ‘AsIs’, and therefore to inhibit the interpretation or conversion of the object, as shown in tab "correct" of @exm-02-map-data-values-directly. 
+
+Throughout this book, you’ll see lots of examples that leverage these arguments, especially in @sec-03. Another good resource to learn more about these arguments (especially their defaults) is the R documentation page available by entering `help(plot_ly)` in your R console.
+
+
+
+::: {.my-code-collection}
+:::: {.my-code-collection-header}
+::::: {.my-code-collection-icon}
+:::::
+:::::: {#exm-02-map-data-values-directly}
+: Map data values to a visual range directly
+::::::
+
+::::
+
+::::{.my-code-collection-container}
+
+::: {.panel-tabset}
+
+###### wrong
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-02-wrong-map-data-values}
+: Map data values direclty without using `base::I()` - Wrong!
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-wrong-map-data-values
+#| fig-cap: "Wrong direct mapping of data values to a visual range."
+
+plotly::plot_ly(diamonds_sample, x = ~cut, 
+                color = "black",
+                type = "histogram")
+
+```
+
+***
+
+This example doesn't produce black bars as it was intended. You can't map data values this way.
+
+
+::::
+:::::
+
+
+###### correct
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-02-correct-map-data-values}
+: Map data values direclty with `base::I()` - Correct!
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-correct-map-data-values
+#| fig-cap: "Correct direct mapping of data values to a visual range."
+
+plotly::plot_ly(
+  diamonds_sample, 
+  x = ~cut, 
+  color = base::I("red"), 
+  stroke = base::I("black"), 
+  span = base::I(2),
+  type = "histogram"
+)
+```
+
+***
+
+This example produces black borders with red bars as it was intended. 
+
+::::
+:::::
+
+:::
+
+::: {.callout-note #nte-02-formula-required}
+###### Referencing column names in datasets with formulas
+
+A formula must always be used when referencing column name(s) in data (e.g. `plotly::plot_ly(mtcars, x = ~wt)`). Formulas are optional when supplying values directly, but they do help inform default axis/scale titles (e.g., `plotly::plot_ly(x = mtcars$wt)` vs. `plotly::plot_ly(x = ~mtcars$wt)`)
+
+This is different to the {**ggplot2**} approach, where you can reference the column just by name without using the tilde (`~`) as a symbol for the formula reference.
+:::
+
+
+::::
+:::::
+
+### Adding layers
+
+In addition to `plotly::layout()` for adding/modifying part(s) of the graph’s layout in @fig-using-pipe, there are also a family of `plotly:add_*()` functions (e.g., `plotly::add_histogram()`, `plotly::add_lines()`, etc) that define how to render data into geometric objects. 
+
+Borrowing terminology from the layered grammar of graphics, these functions add a graphical layer to a plot. A *layer* can be thought of as a group of graphical elements that can be sufficiently described using only 5 components: 
+
+1. data, 
+2. aesthetic mappings (e.g., assigning clarity to color), 
+3. a geometric representation (e.g. rectangles, circles, etc), 
+4. statistical transformations (e.g., sum, mean, etc), and 
+5. positional adjustments (e.g., dodge, stack, etc). 
+
+Notice that in the examples thus far, we have not specified a layer! The layer has been added for us automatically by `plotly::plot_ly()`. The next code collection compares adding implicite and explicite layers:
+
+
+::: {.my-code-collection}
+:::: {.my-code-collection-header}
+::::: {.my-code-collection-icon}
+:::::
+:::::: {#exm-02-compare-two-layered-approaches}
+: Compare implicte and explicite layer to `plotly::plot_ly()`
+::::::
+
+::::
+
+::::{.my-code-collection-container}
+
+::: {.panel-tabset}
+
+###### implicite layer
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-implicite-layer}
+: Add histogram as an implicit layer to `plotly::plot_ly()`
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-implicite-histogram-layer
+#| fig-cap: "Add histogram as an implicit layer to `plotly::plot_ly()`"
+
+
+plotly::plot_ly(diamonds_sample, 
+                x = ~cut,
+                type = "histogram"
+                )
+```
+
+To prevent the warning message in using an implicite layer I have to add the type of the graphics that should be created.
+
+::::
+:::::
+
+###### explicite layer
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-02-explicite-layer}
+: Add histogram as an explicite layer to `plotly::plot_ly()`
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-add-bar-chart-layer
+#| fig-cap: "Add histogram as an explicite layer to `plotly::plot_ly()`"
+
+diamonds_sample |> 
+  plotly::plot_ly() |> 
+  plotly::add_histogram(x = ~cut)
+```
+
+::::
+:::::
+
+:::
+
+::::
+:::::
+
+
+### Combine multiple layers
+
+In many scenarios, it can be useful to combine multiple graphical layers into a single plot. In this case, it becomes useful to know a few things about `plotly::plot_ly()`:
+
+- Arguments specified in `plotly::plot_ly()` are *global*, meaning that any downstream `plotly::add_*()` functions inherit these arguments (unless `inherit = FALSE`).
+- Data manipulation verbs from the {**dplyr**} package may be used to transform the `data` underlying a plotly object.
+
+:::::{.my-procedure}
+:::{.my-procedure-header}
+:::::: {#prp-02-combine-multiple-layers}
+: Steps for combining multiple layers into a single plot
+::::::
+:::
+::::{.my-procedure-container}
+
+1. Globally assign `cut` to `x`.
+2. Add a histogram layer (inherits the `x` from `plotly::plot_ly()`).
+3. Use {**dplyr**} verbs to modify the `data` underlying the plotly object. Here we just count the number of diamonds in each `cut` category.
+4. Add a layer of text using the summarized counts. Note that the global `x` mapping, as well as the other mappings local to this text layer (`text` and `y`), reflect data values from step 3.
+::::
+:::::
+
+::: {.my-code-collection}
+:::: {.my-code-collection-header}
+::::: {.my-code-collection-icon}
+:::::
+:::::: {#exm-02-combine-multiple-layers}
+: Combining multiple layers into a single plot
+::::::
+
+::::
+
+::::{.my-code-collection-container}
+
+::: {.panel-tabset}
+
+###### example
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-02-combine-multiple-layers}
+: An example how to combine multiple layers in a single plot
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-combine-multiple-layers
+#| fig-cap: "Using `plotly::add_histogram()`, `plotly::add_text()`, and {**dplyr**} verbs to compose a plot that leverages a raw form of the data (e.g., histogram) as well as a summarized version (e.g., text labels)."
+
+diamonds_sample |> 
+  plotly::plot_ly(x = ~cut) |>         # (1)
+  plotly::add_histogram()  |>          # (2)
+  dplyr::group_by(cut)  |>             # (3)
+  dplyr::summarise(n = dplyr::n())  |> # (3)
+  plotly::add_text(                    # (4)
+    text = ~scales::comma(n), y = ~n,  # (4)
+    textposition = "top middle",       # (4)
+    cliponaxis = FALSE                 # (4)
+  )                                    # (4)
+```
+
+
+
+::::
+:::::
+
+###### debugging
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-02-debugging-when-combining-multiple-layers}
+: Debugging with plotly::plotly_data() when used {**dplyr**} to transform data
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: debugging-multiple-layers
+
+diamonds_sample |> 
+  plotly::plot_ly(x = ~cut) |>  
+  plotly::add_histogram()  |>   
+  dplyr::group_by(cut)  |>      
+  dplyr::summarise(n = dplyr::n())  |> 
+  plotly::plotly_data()
+
+```
+
+***
+
+When using {**dplyr**} verbs to modify the data underlying the plotly object, you can use the `plotly::plotly_data()` function to obtain the data at any point in time, which is primarily useful for debugging purposes (i.e., inspecting the data of a particular graphical layer).
+
+
+::::
+:::::
+
+:::
+
+::::
+:::::
+
+## Intro to plotly.js
+
+When you print any plotly object, the `plotly::plotly_build()` function is applied to that object, and that generates an R list which adheres to a syntax that plotly.js understands. This syntax is a JavaScript Object Notation (`r glossary("JSON")`) specification that plotly.js uses to represent, serialize, and render web graphics.
+
+![plotly workflow from R code to the graph generated in the web browser by plotly.js](img/plotly.js-working-min.png){#fig-plotly-js 
+fig-alt="Transforming R code of a simple bar graph (with values directly supplied instead of a data column name reference) to a R list via `plotly::plotly_build()` to a JSON object via `plotly::plotly_json()` to the rendered graph in the webbrowser using plotly.js" fig-align="center" 
+width="100%"}
+
+As the diagram suggests, both the `plotly::plotly_build()` and `plotly::plotly_json()` functions can be used to inspect the underlying data structure on both the R and JSON side of things.
+
+::: {.my-code-collection}
+:::: {.my-code-collection-header}
+::::: {.my-code-collection-icon}
+:::::
+:::::: {#exm-dissecting-plotly-js}
+: Dissecting the working of plotly.js
+::::::
+
+::::
+
+::::{.my-code-collection-container}
+
+::: {.panel-tabset}
+
+###### lisstviewer::jsonedit()
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-02-show-json-object}
+: Show `r glossary("JSON")` object
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: show-json
+
+p <- plotly::plot_ly(
+  diamonds_sample, 
+  x = ~cut, 
+  color = ~clarity, 
+  colors = "Accent",
+  type = "histogram"
+  )
+
+listviewer::jsonedit(p)
+```
+
+***
+
+I am using here the `listviewer::jsonedit()` function. This function is not documented in the Plotly book. In contrast to `plotly::plotly_json()` which generates a very long static JSON file `listviewer::jsonedit()` creates an interactive list which can be edited (folding/unfolding or changing values). 
+
+
+::::
+:::::
+
+
+
+###### plotly::plotly_build()
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-02-plotly-build}
+: Get the plotly.js definition with `plotly::plotly_build()`
+::::::
+:::
+::::{.my-r-code-container}
+
+::: {#lst-02-plotly-build}
+```{r}
+#| label: plotly-build
+
+
+# use plotly_build() to get at the plotly.js definition
+# behind *any* plotly object
+b <- plotly::plotly_build(p)
+
+# Confirm there 8 traces
+length(b$x$data)
+
+# Extract the `name` of each trace. plotly.js uses `name` to 
+# populate legend entries and tooltips
+purrr::map_chr(b$x$data, "name")
+
+# Every trace has a type of histogram
+unique(purrr::map_chr(b$x$data, "type"))
+```
+
+Use `plotly_build()` to get at the plotly.js definition
+
+:::
+
+
+***
+
+Since {**plotly**} uses the htmlwidgets standard, the actual plotly.js figure definition appears under a list element named `x`.The {**htmlwidgets**} package provides a foundation for other packages to implement R bindings to JavaScript libraries so that those bindings work in various contexts (e.g. the R console, RStudio, inside rmarkdown or quarto documents, shiny apps, etc). For more info and examples, see the website http://www.htmlwidgets.org.
+::::
+:::::
+
+###### plotly::plotly_json()
+
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-02-display-json-file}
+: Restore and display JSON file that was generated with `plotly::plotly_json()`
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: display-json-file
+
+plotly::plotly_json(p)
+
+```
+***
+
+Here I have now used `plotly::plotly_json()` as recommended in the book. The result is a very long JSON file that takes about 4 minutes to generate it. Therefore I generated it only once after I have finished this chapter and have chached the result.  
+
+The content of the file is similar to the `listviewer::jsonedit()` interactive result in the first tab, but contains also the real data. So you can for instance see the 8 traces under the variable `x`.
+::::
+:::::
+
+
+:::
+
+::::
+:::::
+
+We’ve learned from @lst-02-plotly-build that {**plotly**} creates 8 histogram traces to generate the dodged bar chart: one trace for each level of clarity. Why one trace per category? As [illustrated in this video](https://vimeo.com/315707813), there are two main reasons: 
+
+1. Using ‘Compare data on hover’ mode to get counts for every level of clarity for a given level of cut to populate a tooltip. 
+2. Using the ability to hide/show clarity levels via their legend entries.
+
+Try it out in this [interactive web example](https://plotly-r.com/interactives/intro-show-hide).
+
+In the book there is the hint, that:
+
+> If we investigated further, we’d notice that color and colors are not officially part of the plotly.js figure definition – the `plotly_build()` function has effectively transformed that information into a sensible plotly.js figure definition (e.g., `marker.color` contains the actual bar color codes). In fact, the `color` argument in `plot_ly()` is just one example of an abstraction the R package has built on top of plotly.js to make it easier to map data values to visual attributes.
+
+To acquire and optionally display the plot schema of {**plotly**} one can use the `plotly::schema()` function. It uses as standard argument `listserver::jsonedit = interactive()` to show the schema interactively. The `plotly::schema()` contains valid attributes names, their value type, default values (if any), and min/max values (if applicable).
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-02-plotly-schema}
+: Display the plot schema of {**plotly**}
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: plotly-schema
+#| eval: false
+
+plotly::schema()
+```
+***
+
+<center>(*For this R code chunk is no output available. But if you ran the function manually in RStudio you will get a folded listing which you can explore interactively.*)</center>
+::::
+:::::
+
+
+## Intro to `ggplotly()`
+
+The `plotly::ggplotly()` function from the {**plotly**} package has the ability to translate {**ggplot2**} to {**plotly**}. This functionality can be really helpful for quickly adding interactivity to your existing {**ggplot**} workflow. Moreover, even if you know `plotly::plot_ly()` and plotly.js well, `plotly::ggplotly()` can still be desirable for creating visualizations that aren’t necessarily straight-forward to achieve without it.
+
+::: {.callout-note #nte-intro-ggplotly}
+This section is not meant to teach you {**ggplot2**}, but rather to help point out when and why it might be preferable to `plotly::plot_ly()`.
+:::
+
+### Generate visual encodings of statistical summaries
+
+One good example to use `plotly::ggplotly()` interactive interface is to explore statistical group summaries.
+
+For example, by including a discrete color variable (e.g., `cut`) with `ggplot2::geom_freqpoly()`, you get a frequency polygon for each level of that variable. This ability to quickly generate visual encodings of statistical summaries across an arbitrary number of groups works for basically any geom (e.g. `ggplot2::geom_boxplot()`, `ggplot2::geom_histogram()`, `ggplot2::geom_density()`, etc) and is a key feature of {**ggplot2**}.
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-02-diamond-clarity-levels}
+: Frequency polygons of diamond price by diamond clarity
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-diamond-clarity-levels
+#| fig-cap: "Frequency polygons of diamond price by diamond clarity. This visualization indicates there may be significant main effects."
+
+p <- ggplot2::ggplot(
+  diamonds_sample, 
+  ggplot2::aes(
+    x = base::log(price), 
+    color = clarity
+    )
+  ) + 
+  ggplot2::geom_freqpoly(bins = 30)
+
+plotly::ggplotly(p, doubleClickDelay = 1000)
+```
+***
+
+Double click on the clarity categories in the legend to isolate one specific clarity feature. This has the advantage to see trends for a specific level of the clarity category more pronounced.
+
+
+::::
+:::::
+
+Now, to see how price varies with both cut and clarity, we could repeat this same visualization for each level of cut. This is where {**ggplot2**}’s `ggplot2::facet_wrap()` comes in handy. Moreover, to facilitate comparisons, we can have `ggplot2::geom_freqpoly()` display relative rather than absolute frequencies. By making this plot interactive, we can more easily compare particular levels of clarity by leveraging the legend filtering capabilities.
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-02-compare-price-per-cut-level}
+: Diamond price by clarity and cut
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-compare-price-per-cut-level
+#| fig-cap: "Diamond price by clarity and cut"
+
+
+p2 <- ggplot2::ggplot(
+    diamonds_sample, 
+    ggplot2::aes(
+      x = base::log(price), 
+      color = clarity
+      )
+  ) + 
+  ggplot2::geom_freqpoly(stat = "density") + 
+  ggplot2::facet_wrap(~cut)
+
+plotly::ggplotly(p2, doubleClickDelay = 1000)
+```
+***
+
+Double click at the `clarity` levels in the legend on the right hand side to inspect levels more in detail.
+
+
+::::
+:::::
+
+In addition to supporting most of the ‘core’ {**ggplot2**} API, `plotly::ggplotly()` can automatically convert any {**ggplot2**} extension packages that return a ‘standard’ {**ggplot2**} object. By standard, I mean that the object is comprised of ‘core’ {**ggplot2**} data structures and not the result of custom geoms. 
+
+Some great examples of R packages that extend {**ggplot2**} using core data structures are {**ggforce**}, {**GGally**}, and {**naniar**}  [@ggforce; @GGally; @naniar].
+
+### Sina-plot with `ggforce::geom_sima()`
+
+The aim of {**ggplot2**} is to aid in visual data investigations. This focus has led to a lack of facilities for composing specialised plots. {**ggforce**} aims to be a collection of mainly new stats and geoms that fills this gap. All additional functionality is aimed to come through the official extension system so using {**ggforce**} should be a stable experience.
+
+
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-02-sina-plot}
+: Creating a `r glossary("sina-plot")`
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-sina-plot
+#| fig-cap: "A sina-plot of diamond price by clarity and cut."
+#| echo: fenced
+#| warning: false
+
+p <- ggplot2::ggplot(
+  diamonds_sample, 
+  ggplot2::aes(
+    x = clarity, 
+    y = log(price), 
+    color = clarity
+    )
+  ) +
+  ggforce::geom_sina(alpha = 0.1) + 
+    ggplot2::stat_summary(fun.data = "mean_cl_boot", color = "black") +
+    ggplot2::facet_wrap(~cut)
+
+# WebGL is a lot more efficient at rendering lots of points
+plotly::toWebGL(plotly::ggplotly(p, doubleClickDelay = 1000))
+```
+***
+
+In the chunk option I turned off the warnings otherwise I would get many times the following warnings.
+It is not an optimal solution but proposed by the developer of {**plotly**} (see: [toWebGL: 'scattergl' objects don't have these attributes: 'hoveron'](https://github.com/plotly/plotly.R/issues/1582))
+
+#> Warning: 'scattergl' objects don't have these attributes: 'hoveron'
+#> Valid attributes include:
+#> 'connectgaps', 'customdata', 'customdatasrc', 'dx', 'dy', 'error_x', 'error_y', 'fill', 'fillcolor', 'hoverinfo', 'hoverinfosrc', 'hoverlabel', 'hovertemplate', 'hovertemplatesrc', 'hovertext', 'hovertextsrc', 'ids', 'idssrc', 'legendgroup', 'legendgrouptitle', 'legendrank', 'line', 'marker', 'meta', 'metasrc', 'mode', 'name', 'opacity', 'selected', 'selectedpoints', 'showlegend', 'stream', 'text', 'textfont', 'textposition', 'textpositionsrc', 'textsrc', 'texttemplate', 'texttemplatesrc', 'transforms', 'type', 'uid', 'uirevision', 'unselected', 'visible', 'x', 'x0', 'xaxis', 'xcalendar', 'xhoverformat', 'xperiod', 'xperiod0', 'xperiodalignment', 'xsrc', 'y', 'y0', 'yaxis', 'ycalendar', 'yhoverformat', 'yperiod', 'yperiod0', 'yperiodalignment', 'ysrc', 'key', 'set', 'frame', 'transforms', '_isNestedKey', '_isSimpleKey', '_isGraticule', '_bbox'
+
+Another possibility would be to write a different `plotly::ggplotly()`, for instance `ggplotly2()` as it [was done](https://github.com/tidymodels/shinymodels/issues/27) for the {**shinymodels**} package.
+::::
+:::::
+
+This visualization jitters the raw data within the density for each group – allowing us not only to see where the majority observations fall within a group, but also across all groups. By making this layer interactive, we can query individual points for more information and zoom into interesting regions. 
+
+The second layer of @fig-sina-plot uses `ggplot2::stat_summary()` to overlay a 95% confidence interval estimated via a bootstrap algorithm via the {**Hmisc**} package [@Hmisc].
+
+### Other examples
+
+There are other examples with `GGally::ggcoef()` and `naniar::geom_miss_point()`. But these figures do not provide new knowledge. Additionally I have problems with the visualizations:
+
+1. The ilustration with `GGally::ggcoef()` (@fig-ggally-ggcoef) does not show up in the HTML page because of memory problems.
+2. The example with `naniar::geom_miss_point()` does not show the points for the missing values. This is strange as I am using the exact same code as in the book. Additionally the graphic display is empty too because of memory problems. I even failed when i used the full diamonds dataset and inspecting the result in RStudio. 
+
+I have added the example nonetheless hoping that I will a solution later.
+
+#### GGally example
+
+{**GGally**} extends {**ggplot2**} by adding several functions to reduce the complexity of combining geometric objects with transformed data. Some of these functions include a pairwise plot matrix, a two group pairwise plot matrix, a parallel coordinates plot, a survival plot, and several functions to plot networks.
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-02-ggally-ggcoef}
+: Visualizing the coefficient estimates and their standard errors 
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-ggally-ggcoef
+#| fig-cap: "Zooming in on a coefficient plot generated from the `GGally::ggcoef()` function"
+#| warning: false
+
+m <- stats::lm(
+  log(price) ~ log(carat) + cut, 
+  data = diamonds_sample)
+
+gg <- GGally::ggcoef(m)
+# dynamicTicks means generate new axis ticks on zoom
+plotly::ggplotly(
+  gg, 
+  dynamicTicks = TRUE,
+  doubleClickDelay = 1000
+  )
+```
+
+***
+
+@fig-ggally-ggcoef shows how injecting interactivity into this plot allows us to query exact values and zoom in on the most interesting regions. See [video](https://vimeo.com/322362701) how to do it.
+
+::::
+:::::
+
+#### naniar example
+
+Although the `diamonds` dataset does miss data, missing values are ubiquitous in datasets and need to be explored and handled in the initial stages of analysis. {**naniar**} provides data structures and functions that facilitate the plotting of missing values and examination of imputations. This allows missing data dependencies to be explored with minimal deviation from the common work patterns of {**ggplot2**} and tidy data. 
+
+The naniar package provides a suite of computational and visual resources for working with and revealing structure in missing values. Moreover, {**naniar**} provides a custom geom, `naniar::geom_miss_point()`, that can be useful for visualizing missingness structure. 
+
+@fig-naniar-missing-points demonstrates this by introducing fake missing values to the diamond price.
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-02-naniar-missing-points}
+: Visualizing missingness structure with `naniar::geom_miss_point()`
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-naniar-missing-points
+#| fig-cap: "Using the `naniar::geom_miss_point()` function to visualize missing values in relation to non-missing values. Missing values are shown in red."
+#| warning: false
+
+# fake some missing data
+diamonds_sample$price_miss <- base::ifelse(
+  diamonds_sample$depth > 60, diamonds_sample$price, NA)
+
+p <- ggplot2::ggplot(diamonds_sample, 
+         ggplot2::aes(
+           x = clarity,
+           y = base::log(price_miss)
+           )
+         ) +
+    naniar::geom_miss_point(alpha = 0.1) + 
+    ggplot2::stat_summary(fun.data = "mean_cl_boot", colour = "black") +
+    ggplot2::facet_wrap(~cut)
+
+
+plotly::toWebGL(plotly::ggplotly(p, doubleClickDelay = 1000))
+```
+
+***
+
+This example did not work for me. I could not see the missing points in the bottom of the different windows in the facet graph.
+::::
+:::::
+
+## Summary
+
+{**Plotly**} is a visualization nice toolkit because you can quickly insert interactivity with methods such as hover, zoom, and filter. You can use the more direct way with `plotly::plot_ly` or converting a {**ggplot2**} figure with `plotly::ggplotly()` into a interactive {**plotly**} graphics.

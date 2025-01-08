@@ -16,6 +16,9 @@ book:
 
   chapters:
     - index.qmd
+    - 01-intro.qmd
+    - 02-overview.qmd
+    - 03-scattered-foundations.qmd
 
 bibliography:
     - references.bib
@@ -111,7 +114,7 @@ language:
    crossref-def-title: "Experiment"         # replaces "Definition"
    crossref-exm-title: "Code Collection"    # replaces  "Example"
    crossref-exr-title: "Exercise"           # remains  "Exercise"
-   crossref-fig-title: "Graph"              # replaces "Figure"
+   crossref-fig-title: "Figure"
    crossref-lem-title: "Resource"           # replaces "Lemma"
    crossref-lst-title: "Listing / Output"   # replaces  "Listing"
    crossref-prp-title: "Procedure"          # replaces "Proposition"
@@ -124,4 +127,4 @@ language:
    callout-note-title: "Note"            # blue
    callout-warning-title: "Watch out!"   # orange
    callout-important-title: "Important"  # red
-   callout-caution-title: "Typo"         # yellow
+   callout-caution-title: "Caution"      # yellow

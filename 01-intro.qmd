@@ -1,9 +1,19 @@
-# Introdcution {#sec-chap01}
+# Introduction {#sec-chap01}
 
+Even before the web, interactive graphics were shown to have great promise in aiding the exploration of high-dimensional data. See for instance the `r glossary("ASA")` [video library of interactive statistical graphics](https://community.amstat.org/jointscsg-section/media/videos).
 
-```{r}
-#| label: setup
-#| include: false
+Roughly speaking there are three advantages for interactive graphics:
 
-base::source(file = "R/helper.R")
-```
+- Identifying details of data that would otherwise go missing or difficult to extract.
+- Aiding the sense-making process by searching for information quickly without fully specified questions.
+- Diagnosing models and understanding algorithms.
+
+There are several Graphical User Interface (GUI) systems for creating interactive graphics: 
+
+- [DataDesk](https://datadescription.com/), 
+- [GGobi](http://ggobi.org/docs/index.html), 
+- [Mondrian](http://www.theusrus.de/Mondrian/), 
+- [JMP](https://www.jmp.com), 
+- [Tableau](https://www.tableau.com/).
+
+Bu these programs do not have a code-based workflow: any tasks you complete through a GUI likely can’t be replicated without human intervention. That means, if at any point, the data changes, and analysis outputs must be regenerated, you need to remember precisely how to reproduce the outcome, which isn’t necessarily easy, trustworthy, or economical. Moreover, GUI-based systems are typically ‘closed’ systems that don’t allow themselves to be easily customized, extended, or integrated with another system.

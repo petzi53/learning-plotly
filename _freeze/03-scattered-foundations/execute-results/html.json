@@ -1,0 +1,15 @@
+{
+  "hash": "4c10c65dd74f232557d3daa80ebbbfcd",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\nknitr: \n    opts_chunk: \n      code-fold: show\n      results: hold\n  \n---\n\n\n\n# Scattered Foundations {#sec-03}\n\n\n\n\n\n\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

@@ -1,5 +1,10 @@
 # Preface {.unnumbered}
 
+::: {.callout-note style="color: blue;"}
+10% of the book read (chapter 1 & 2)
+:::
+
+
 ::: my-watch-out
 ::: my-watch-out-header
 WATCH OUT: This is my personal learning material and is therefore
@@ -24,14 +29,14 @@ course my own responsibility.
 
 ## Content and Goals of this Book {.unnumbered}
 
-NEEDS TO BE FILLED
+XXX NEEDS TO BE FILLED
 
 
 ## Text passages
 
 ### Quotes and personal comments
 
-NEEDS TO BE FILLED
+XXX NEEDS TO BE FILLED
 
 
 ### Glossary
