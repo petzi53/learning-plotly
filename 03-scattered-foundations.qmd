@@ -11,13 +11,912 @@ knitr:
 ```{r}
 #| label: setup
 #| results: hold
-#| include: false
+#| echo: fenced
 
 base::source(file = "R/helper.R")
 ggplot2::theme_set(ggplot2::theme_bw())
-options(show.signif.stars = FALSE)
 
+utils::data(economics, package = "ggplot2")
+```
+
+## Introduction
+
+### Load & inspect dataset
+
+This chapter works with the `economics` dataset from {**ggplot2**}. I have loaded it with `utils::data(economics, package = "ggplot2")` in the setup code chunk so that it is always available, even if I don't run the whole file but only a specific code chunk.
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-inspect-data}
+: Load and inspect dataset
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: inspect-data
+
+dplyr::glimpse(economics)
+```
+***
+
+A data frame with 574 rows and 6 variables:
+
+- **date**: Month of data collection
+- **pce**: [personal consumption expenditures](https://fred.stlouisfed.org/series/PCE), in billions of dollars, 
+- **pop**: [total population](https://fred.stlouisfed.org/series/POP), in thousands, 
+- **psavert**: [personal savings rate](https://fred.stlouisfed.org/series/PSAVERT/)
+- **uempmed**: [median duration of unemployment](https://fred.stlouisfed.org/series/UEMPMED), in weeks, 
+- **unemploy**: [number of unemployed](https://fred.stlouisfed.org/series/UNEMPLOY) in thousands, 
+
+::::
+:::::
+
+
+### Traces and mode
+
+A **plotly.js** figure contains one (or more) trace(s), and every `r glossary("trace-plotly", "trace")` has a type. The trace type scatter is great for drawing low-level geometries (e.g., points, lines, text, and polygons) and provides the foundation for many `plotly::add_*()` functions (e.g., 
+- `plotly::add_markers()`, `plotly::add_lines()`, `plotly::add_paths()`, `plotly::add_segments()`, `plotly::add_ribbons()`, `plotly::add_area()`, and `plotly::add_polygons()`) as well as many `plotly::ggplotly()` charts.
+
+It is very instructive to display all these different low-level geometries with the examples mentioned in the R help file for `plotly::add_trace()`.
+
+::: {.my-code-collection}
+:::: {.my-code-collection-header}
+::::: {.my-code-collection-icon}
+:::::
+:::::: {#exm-03-add-trace-examples}
+: Examples for adding trace(s) to a {**plotly**} visualization
+::::::
+
+::::
+
+::::{.my-code-collection-container}
+
+::: {.panel-tabset}
+
+###### Markers
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-add-markers}
+: Add markers (points) as scatter trace
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-add-markers
+#| fig-cap: "Scatter trace with mode of markers"
+
+plotly::plot_ly(economics, x = ~date, y = ~uempmed) |> 
+  plotly::add_markers()
+```
+
+***
+
+Some `plotly::add_*()` functions are a specific case of a trace type. For example, `plotly::add_markers()` is a scatter trace with mode of markers.
+
+The above code could also be written as: `plotly::plot_ly(economics, x = ~date, y = ~uempmed, type = "scatter", mode = "markers")`
+
+
+::::
+:::::
+
+
+###### Text
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-add-text}
+: Add text as scatter trace
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-add-text
+#| fig-cap: "Scatter trace with mode of text"
+
+plotly::plot_ly(economics, x = ~date, y = ~uempmed) |> 
+  plotly::add_text(text = "%")
+```
+
+::::
+:::::
+
+
+###### Path
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-add-path-savings}
+: Personal savings visualized with `plotly::add_path()`
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-add-path-savings
+#| fig-cap: "Personal saving rates visualized with `plotly::add_paths()`. The figure connects observations according to the ordering of psavert (personal savings rate)."
+
+# sort economics by psavert, just to 
+# show difference between paths and lines
+# here showing only paths
+p <- economics |> 
+  dplyr::arrange(psavert) |> 
+  plotly::plot_ly(x = ~date, y = ~psavert)
+
+plotly::add_paths(p)
+```
+
+::::
+:::::
+
+
+###### Lines
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-add-lines-savings}
+: Personal saving rates visualized with `plotly::add_lines()`
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-add-lines-savings
+#| fig-cap: "Personal saving rates visualized with `plotly::add_lines()`. The figure connects observations according to the ordering of `x` (the date)."
+
+# sort economics by psavert, just to
+# show difference between paths and lines
+# here only showing lines
+p <- economics |>
+  dplyr::arrange(psavert) |>
+  plotly::plot_ly(x = ~date, y = ~psavert)
+
+plotly::add_lines(p)
+```
+
+::::
+:::::
+
+###### plotly.js
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-plotly-js}
+: Working with **ploty.js** directly
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: plotly-js
+
+plotly::plot_ly(economics, x = ~date, y = ~uempmed) |> 
+  plotly::add_trace(type = "scatter", mode = "markers+lines")
+```
+***
+
+If you prefer to work with **plotly.js** more directly, you can always use `plotly::add_trace()` and specify the type and mode yourself. See also code and comment for @fig-03-add-markers.
+::::
+:::::
+
+
+:::
+
+::::
+:::::
+
+
+
+### Groupings
+
+In addition to ‘aesthetic mapping’ arguments (unique to the R package) which make it easier to map data to visual properties, {**dplyr**} groupings can be used to ensure there is at least one geometry per group. 
+
+::: {.my-code-collection}
+:::: {.my-code-collection-header}
+::::: {.my-code-collection-icon}
+:::::
+:::::: {#exm-03-groupings}
+: Generating one geometry per 'group'
+::::::
+
+::::
+
+::::{.my-code-collection-container}
+
+::: {.panel-tabset}
+
+###### {dplyr} groupings
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-grouping-one-trace}
+: Group data with {**dplyr**}
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-grouping-one-trace
+#| fig-cap: "Drawing multiple lines using {**dplyr**} groups"
+
+econ <- economics |> 
+  dplyr::mutate(
+    yr = lubridate::year(date),
+    mnth = lubridate::month(date)
+    )
+
+# One trace (more performant, but less interactive)
+econ |> 
+  dplyr::group_by(yr)  |> 
+  plotly::plot_ly(x = ~mnth, y = ~uempmed) |> 
+  plotly::add_lines(text = ~yr)
 ```
 
 
+***
+
+{**dplyr**} groupings can be used to ensure there is at least one geometry per group. @fig-03-grouping-one-trace demonstrates how `dplyr::group_by()` could be used to effectively wrap the time series from @fig-03-add-markers by year, which can be useful for visualizing annual seasonality.
+
+::: {.callout-note #nte-one-trace-performance-better}
+###### Grouping data with just one trace is more performant, but less interactive. 
+:::
+
+
+
+
+::::
+:::::
+
+
+###### Categorical variable
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-multiple-traces}
+: Multiple traces with levels of a categorical variable
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-multiple-traces
+#| fig-cap: "Categorical color mapping"
+
+econ <- economics |> 
+  dplyr::mutate(
+    yr = lubridate::year(date),
+    mnth = lubridate::month(date)
+    )
+
+# Multiple traces (less performant, but more interactive)
+plotly::plot_ly(econ, x = ~mnth, y = ~uempmed) |> 
+  plotly::add_lines(color = ~base::ordered(yr))
+```
+
+***
+
+Another approach to generating at least one geometry per ‘group’ is to provide categorical variable to a relevant aesthetic (e.g., `color`).
+
+
+::: {.callout-note #nte-multiple-traces-interactivity-better}
+###### Grouping data with multiple traces is less performant, but more interactive.
+:::
+
+
+
+::::
+:::::
+
+Look a [video how to use the interactive features](https://vimeo.com/316679591) in @fig-03-multiple-traces. For a bigger interactive demonstration to play around, see https://plotly-r.com/interactives/scatter-lines.html.
+
+Comparatively speaking, @fig-03-multiple-traces has more interactive capabilities (e.g., legend-based filtering and multiple tooltips) than @fig-03-grouping-one-trace, but it does not scale as well with many lines. 
+
+###### Split argument
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-split-argument}
+: Guaranteeing one trace per group level
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-split-argument
+#| fig-cap: "Guaranteeing one trace per group level with the `split` argument"
+
+
+plotly::plot_ly(econ, x = ~mnth, y = ~uempmed) |> 
+  plotly::add_lines(split = ~yr, color = base::I("black"))
+```
+***
+
+The split argument guarantees one trace per group level (regardless of the variable type). This is useful if you want a consistent visual property over multiple traces.
+::::
+:::::
+
+:::
+
+
+
+
+::::
+:::::
+
+In the case of @fig-03-grouping-one-trace, the benefit of having multiple traces is that we can perform interactive filtering via the legend and compare multiple y-values at a given x. The cost of having those capabilities is that plots starts to be become sluggish after a few hundred traces, whereas thousands of lines can be rendered fairly easily in one trace.
+
+### plotly.js attributes
+
+Mapping data to visual properties make it easier to get started using plotly.js, but it still pays off to learn how to use **plotly.js** directly. You won’t find **plotly.js** attributes listed as explicit arguments in any plotly function (except for the special type attribute), but they are passed along verbatim to the **plotly.js** figure definition through the `...` operator. 
+
+The scatter-based layers in this chapter fix the type **plotly.js** attribute to "scatter" as well as the mode (e.g., `plotly::add_markers()` uses `mode = 'markers'` etc), but you could also use the lower-level `plotly::add_trace()` to work more directly with **plotly.js**. 
+
+For example, Figure 3.3 shows how to render markers, lines, and text in the same scatter trace. It also demonstrates how to leverage nested **plotly.js** attributes, like `textfont` and `xaxis` – these attributes contain other attributes, so you need to supply a suitable named list to these arguments.
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-render-several-modes}
+: Render different modes (markers, lines and text) in the same scatter trace
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-render-several-modes
+#| fig-cap: "Using the generic `plotly::add_trace()` function to render markers, lines, and text in a single scatter trace."
+
+base::set.seed(99)
+
+plotly::plot_ly() |> 
+ plotly::add_trace(
+   type = "scatter",
+   mode = "markers+lines+text",
+   x = 4:6, 
+   y = 4:6,
+   text = base::replicate(3, 
+        praise::praise("You are ${adjective}! 🙌")),
+   textposition = "right",
+   hoverinfo = "text",
+   textfont = base::list(family = "Roboto Condensed", size = 16)
+ ) |> 
+ plotly::layout(xaxis = base::list(range = c(3, 8)))
+```
+***
+
+
+::::
+:::::
+
+::: {.callout-note #nte-03-specify-attr-directly}
+`plotly::add_trace()` function, as well as any `plotly::add_*()` function allows you to directly specify **plotly.js** attributes.
+:::
+
+
+:::::{.my-resource}
+:::{.my-resource-header}
+:::::: {#lem-03-plotly.js-attributes}
+: plotly.js attributes
+::::::
+:::
+::::{.my-resource-container}
+
+- [Online reference](https://plot.ly/r/reference/#scatter): The online plotly.js figure reference is a decent place to search and learn about the attributes.
+- **`plotly::schema()`**: It provides more information than the online docs (e.g., value types, default values, acceptable ranges, etc). It matches the version used in the R package and the interface makes it easier to traverse and discover new attributes. See @cnj-02-plotly-schema.
+
+::::
+:::::
+
+
+## Markers
+
+### plotly vs ggplot2
+
+For the following examples it is helpful for me to compare **plotly** and **ggplot2** with their easiest syntax for a graph.
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-compare-plotly-ggplot2}
+: Compare the simplest graphics creaty by **plotly** and **ggplot2**
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-compare-plotly-ggplot2
+#| fig-cap: "Compare the simplest graphics created by **plotly** (left) and **ggplot2** (right)"
+#| warning: false
+
+p1 <- plotly::plot_ly(ggplot2::mpg, x = ~cty, y = ~hwy) |> 
+  plotly::add_markers()
+p2 <- ggplot2::ggplot(ggplot2::mpg, ggplot2::aes(x = cty, y = hwy)) +
+  ggplot2::geom_point() 
+
+plotly::subplot(p1, p2)
+```
+***
+
+The syntax of **plotly** and **ggplot2** are similar:
+
+1. **plotly** needs the formula argument, **ggplot2** needs `ggplot2::aes()` without formula. 
+2. **plotly** adds layers with the pipe, **ggplot2** adds layers with `+`
+3. `plotly::add_markers()` corresponds to `ggplot2::geom_point()`
+4. **plotly** produces in standard mode blue, **ggplot2** black points
+5. **plotly** displays in this standard mode no colored background and has no frame around the graphics. (Remember that I have used `ggplot2::theme_set(ggplot2::theme_bw())` in the setup chunk for **ggplot2** figures. To get rid of the frame I would use: `ggplot2::theme(panel.border = ggplot2::element_blank())`.
+
+In this code chunk I suppressed the warning `Can only have one: config` after using `plotly::subplot()`. Other functions for plotting the two graphs created by different packages did not succeed. The problem is --- as I understood --- that they produce different object types:
+
+- **plotly**: `class(p1)` = `r base::class(p1)`
+- **gplot2**: `class(p2)` = `r base::class(p2)`
+
+
+::: {.callout-note #nte-03-subplot-interactivity}
+###### It is a very nice effect using `plotly::subplot()` that both graphics are interactive!
+:::
+
+
+::::
+:::::
+
+
+This section details scatter traces with a mode of "markers" (i.e., `plotly::add_markers()`). For simplicity, many of the examples here use `plotly::add_markers()` with a numeric x and y axis, which results in scatterplot – a common way to visualize the association between two quantitative variables. The content that follows is still relevant markers displayed non-numeric x and y (aka dot pots) as shown in @sec-03-dot-plots-error-bars.
+
+### Alpha blending
+
+`r glossary("Overplotting")`, a common problem with scatterplots, can be combatted via `r glossary("alpha blending")`.
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-combat-overplotting}
+: Combatting overplotting with in a scatterplot with alpha blending
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-combat-overplotting
+#| fig-cap: "Combating overplotting in a scatterplot with alpha blending."
+
+plotly::subplot(
+  plotly::plot_ly(
+    ggplot2::mpg, 
+    x = ~cty, 
+    y = ~hwy, 
+    name = "default") |>  
+  plotly::add_markers(),
+  plotly::plot_ly(
+    ggplot2::mpg, 
+    x = ~cty,
+    y = ~hwy) |> 
+    plotly::add_markers(
+      alpha = 0.2, 
+      name = "alpha"
+      )
+)
+```
+***
+
+::: {.callout-note  #nte-03-subplots}
+###### Learn more about subplots at https://plotly.com/r/subplots/
+
+:::
+
+::::
+:::::
+
+
+
+### Colors
+
+Mapping a discrete variable to color produces one trace per category (see: @sec-03-intro-plotly-js), which is desirable for it’s legend and hover properties. 
+
+On the other hand, mapping a *numeric* variable to color produces one trace, as well as a colorbar guide for visually decoding colors back to data values. As you can see in the online documentation there are many [attributes for colorbar](https://plotly.com/r/reference/#scatter-marker-colorbar). But it is better to explore these attributes by navigating `plotly::schema()` by opening the following hierarchical folders: scatter->attributes->marker->colorbar.
+
+The `plotly::colorbar()` function can be used to customize the appearance of this automatically generated guide. The default colorscale is `viridis`, a perceptually-uniform colorscale (even when converted to black-and-white), and perceivable even to those with common forms of color blindness. Viridis is also the default colorscale for ordered factors.
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-numeric-color-mapping}
+: Variations of numeric color mapping
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-numeric-color-mapping
+#| fig-cap: "Variations of numeric color mapping"
+
+p <- plotly::plot_ly(
+  ggplot2::mpg, 
+  x = ~cty, 
+  y = ~hwy, 
+  alpha = 0.5
+  )
+
+p1 <- plotly::add_markers(
+    p, 
+    color = ~cyl, 
+    showlegend = FALSE
+  ) |> 
+  plotly::colorbar(title = "Viridis")
+  
+p2 <- plotly::add_markers(
+  p, 
+  color = ~base::factor(cyl)
+  )
+
+plotly::subplot(p1, p2)
+```
+
+::::
+:::::
+
+
+There are numerous ways to alter the default color scale via the colors argument. This argument excepts one of the following: 
+
+1. a color brewer palette name (see the row names of `RColorBrewer::brewer.pal.info` for valid names and have a look at the [RColorBrewer color palettes](https://bookdown.org/pbaumgartner/gdswr-notes/05-vector-geospatial-data.html#sec-05-modify-map-appearance)),
+2. a vector of colors to interpolate, or 
+3. a color interpolation function like `grDevices::colorRamp()` or `scales::colour_ramp()`. 
+
+Although this grants a lot of flexibility, one should be conscious of using a sequential colorscale for numeric variables (& ordered factors) as shown in Figure 3.7, and a qualitative colorscale for discrete variables as shown in Figure 3.8.
+
+::: {.my-code-collection}
+:::: {.my-code-collection-header}
+::::: {.my-code-collection-icon}
+:::::
+:::::: {#exm-03-color-scales}
+: Color scales for numeric and discrete variables
+::::::
+
+::::
+
+::::{.my-code-collection-container}
+
+::: {.panel-tabset}
+
+###### numeric
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-numeric-colorscale}
+: Color scale for numeric variables
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-numeric-colorscale
+#| fig-cap: "Three variations on a numeric color mapping."
+
+col1 <- c("#132B43", "#56B1F7")
+col2 <- viridisLite::inferno(10)
+col3 <- grDevices::colorRamp(base::c("red", "white", "blue"))
+
+plotly::subplot(
+  plotly::add_markers(p, color = ~cyl, colors = col1)  |> 
+    plotly::colorbar(title = "ggplot2 default"),
+  plotly::add_markers(p, color = ~cyl, colors = col2) |>  
+    plotly::colorbar(title = "Inferno"),
+  plotly::add_markers(p, color = ~cyl, colors = col3) |>  
+    plotly::colorbar(title = "colorRamp")
+  ) |>  
+  plotly::hide_legend()
+```
+
+::::
+:::::
+
+
+###### discrete
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-discrete-colorscale}
+: Colorscale for discrete variables
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-discrete-colorscale
+#| fig-cap: "Three variations on a discrete color mapping."
+
+col1 <- "Accent"
+col2 <- grDevices::colorRamp(base::c("red", "blue"))
+col3 <- c(`4` = "red", `5` = "black", `6` = "blue", `8` = "green")
+
+plotly::subplot(
+  plotly::add_markers(p, color = ~base::factor(cyl), colors = col1),
+  plotly::add_markers(p, color = ~base::factor(cyl), colors = col2),
+  plotly::add_markers(p, color = ~base::factor(cyl), colors = col3)
+  ) |>  
+  plotly::hide_legend()
+```
+
+::::
+:::::
+
+:::
+
+::::
+:::::
+
+As introduced in @fig-02-correct-map-data-values, color codes can be specified manually (i.e., avoid mapping data values to a visual range) by using the `base::I()` function. Figure 3.9 provides a simple example using `plotly::add_markers()`. Any color understood by the `grDevices::col2rgb()` function can be used in this way. 
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-color-manually}
+: Specify color manually
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-color-manually
+#| fig-cap: "Setting a fixed color directly using base::I()."
+
+plotly::add_markers(p, color = base::I("red"))
+```
+
+::::
+:::::
+
+
+The color argument is meant to control the ‘fill-color’ of a geometric object, whereas stroke (@sec-03-stroke-and-span) is meant to control the ‘outline-color’ of a geometric object. In the case of `plotly::add_markers()`, that means color maps to the **plotly.js** attribute `marker.color` (scatter->attributes->marker->color) and stroke maps to `marker.line.color` (scatter->attributes->marker->line->color). Not all, but many, marker symbols have a notion of stroke.
+
+### Symbols
+
+The `symbol` argument can be used to map data values to the `marker.symbol` **plotly.js** attribute. It uses the same semantics that we’ve already seen for color:
+
+- A numeric mapping generates trace.
+- A discrete mapping generates multiple traces (one trace per category).
+- The plural, `symbols`, can be used to specify the visual range for the mapping.
+- Mappings are avoided entirely (= color codes can be specified manually) through `base::I()`.
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-mapping-symbols}
+: Map data values with symbols
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-mapping-symbols
+#| fig-cap: "Data values mapped with symbols"
+
+p <- plotly::plot_ly(ggplot2::mpg, x = ~cty, y = ~hwy, alpha = 0.3) 
+
+plotly::subplot(
+  plotly::add_markers(p, symbol = ~cyl, name = "A single trace"),
+  plotly::add_markers(p, symbol = ~base::factor(cyl), color = base::I("black"))
+)
+```
+
+***
+
+The left panel of @fig-03-mapping-symbols uses a numeric mapping and the right panel uses a discrete mapping. As a result, the left panel is linked to the first legend entry ("A single trace"), whereas the right panel is linked to the bottom four legend entries. 
+
+::: {.callout-note #nte-number-legend-entries}
+The text in the book says three legend entries, but there are four different symbols for the different number of cylinders `r base::sort(base::unique(ggplot2::mpg$cyl))`.
+:::
+
+
+When plotting multiple traces and no color is specified, the **plotly.js** `colorway` is applied (i.e., each trace will be rendered a different color). To set a fixed color, you can set the color of every trace generated from this layer with `color = base::I("black")`, or similar.
+::::
+:::::
+
+There are two ways to specify the visual range of symbols: 
+
+1. **numeric codes** (interpreted as a pch codes) or 
+2. **a character string** specifying a valid `marker.symbol` value. 
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-specify-symbols}
+: Ways to specify the visual range of symbols
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-specify-symbols
+#| fig-cap: "Specifying the visual range of symbols with numeric codes and character strings"
+
+plotly::subplot(
+  plotly::add_markers(p, 
+    symbol = ~cyl, 
+    symbols = c(17, 18, 19, 43)
+    ),
+  plotly::add_markers(
+    p, color = base::I("black"),
+    symbol = ~base::factor(cyl), 
+    symbols = c("triangle-up", "diamond", "circle", "cross-thin-open")
+  )
+)
+```
+
+
+***
+
+@fig-03-specify-symbols uses `pch` codes (left panel)  as well as their corresponding `marker.symbol` name (right panel) to specify the visual range. `pch` stands for plotting character. For more details see `plotly::schema(F)$traces$scatter$attributes$marker$symbol$values`. To see all the symbols available to **plotly**, as well as a method for supplying your own custom glyphs, see Chapter 28 of the plotly book: [Working with symbols and glyphs](https://plotly-r.com/working-with-symbols.html).
+
+::::
+:::::
+
+
+As with colors, these symbols (i.e., the visual range) can also be supplied directly to `symbol` through `base::I()`.
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-map-symbols-directly}
+: Map symbols directly through `base::I()`
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-map-symbols-directly
+#| fig-cap: "Setting a fixed symbol directly using I()."
+
+plotly::plot_ly(ggplot2::mpg, x = ~cty, y = ~hwy) |> 
+  plotly::add_markers(symbol = base::I(18), alpha = 0.5)
+```
+
+::::
+:::::
+
+### Stroke and span {#sec-03-stroke-and-span}
+
+The `stroke` argument follows the same semantics as `color` and `symbol` when it comes to variable mappings and specifying visual ranges. Typically you don’t want to map data values to `stroke`, you just want to specify a fixed outline color. By default, the `span`, or width of the stroke, is zero, you’ll likely want to set the width to be around one pixel.
+
+::: {.callout-note style="color: blue;" #nte-ID}
+###### What are the corresponding {**ggplot**} arguments for plotly's `stroke` and `span`?
+
+The corresponding {**ggplot**} arguments are `color`, `fill`, `size` and `stroke`: The size of the filled part is controlled by `size`, the size of the stroke (aka `span` in **Plotly**) is controlled by `stroke`. Each is measured in mm (and not in pixels).
+:::
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-stroke-and-span}
+: Mapping `symbol`, `stroke` and `span` directly
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-stroke-and-span
+#| fig-cap: "Using `stroke` and `span` to control the outline color as well as the width of that outline."
+
+plotly::plot_ly(ggplot2::mpg, x = ~cty, y = ~hwy, alpha = 0.5) |> 
+  plotly::add_markers(
+    symbol = base::I(18), 
+    stroke = base::I("black"), 
+    span = base::I(1))
+```
+
+::::
+:::::
+
+
+### Size
+
+For scatterplots, the `size` argument controls the area of markers (unless otherwise specified via [sizemode](https://plotly.com/r/reference/#scatter-marker-sizemode)), and *must* be a numeric variable. The `sizes` argument controls the minimum and maximum size of circles, in pixels.
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-map-size-and-sizes}
+: Map `size` and `sizes`
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-map-size-and-sizes
+#| fig-cap: "Controlling the size range via `sizes` (measured in pixels)."
+
+p <- plotly::plot_ly(
+  ggplot2::mpg, x = ~cty, 
+  y = ~hwy, 
+  alpha = 0.3, 
+  fill = ~''  # added this line to suppress warning
+  ) 
+
+plotly::subplot(
+  plotly::add_markers(p, size = ~cyl, name = "default"),
+  plotly::add_markers(p, size = ~cyl, sizes = c(1, 500), name = "custom")
+)
+```
+***
+
+::: {.callout-note #nte-03-add-fill-empty}
+###### Prevent 'Warning: `line.width` does not currently support multiple values.'
+
+To prevent the above warning message I had to add the line `fill = ~''`. For details see [StackOverflow](https://stackoverflow.com/a/64800983/7322615).
+:::
+
+
+::::
+:::::
+
+Similar to other arguments, `base::I()` can be used to specify the size directly. In the case of markers, size controls the `marker.size` **plotly.js** attribute. Remember, you always have the option to set this attribute directly by doing something similar to @fig-03-set-size-directly.
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-set-size-directly}
+: Set size directly
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-03-set-size-directly
+#| fig-cap: "Setting a fixed marker size directly using `marker.size`."
+
+plotly::plot_ly(
+  ggplot2::mpg, 
+  x = ~cty, 
+  y = ~hwy, 
+  alpha = 0.3, 
+  size = base::I(100)
+) |> 
+  plotly::add_markers(type = "scatter") ## added to prevent warnings
+```
+***
+
+::: {.callout-note #nte-ID}
+###### Preventing warning messages
+
+Using the code from the book I received the following warning message twice:
+
+> No trace type specified:      
+    &nbsp;&nbsp;&nbsp;&nbsp;Based on info supplied, a 'scatter' trace seems appropriate.      
+    &nbsp;&nbsp;&nbsp;&nbsp;Read more about this trace type -> [https://plotly.com/r/reference/#scatter](https://plotly.com/r/reference/#scatter)      
+> No scatter mode specifed:       
+    &nbsp;&nbsp;&nbsp;&nbsp;Setting the mode to markers            
+    &nbsp;&nbsp;&nbsp;&nbsp;Read more about this attribute -> [https://plotly.com/r/reference/#scatter-mode](https://plotly.com/r/reference/#scatter-mode)
+  
+To prevent this warning I had to add another layer `plotly::add_markers(type = "scatter")`.
+:::
+
+::::
+:::::
+
+
+### Dot Plots and Error Bars {#sec-03-dot-plots-error-bars}
+
+
+## Lines
+
+### Linetypes
+
+### Segments
+
+#### Slopegraph
+
+#### Dumpbell
+
+#### Candlestick
+
+### Density Plots
+
+### Parallel Coordinates
+
+## Polygons
+
+The `plotly::add_polygons()` function is essentially equivalent to `plotly::add_paths()` with the `fill` attribute set to “toself”. Polygons form the basis for other, higher-level scatter-based layers (e.g., `plotly::add_ribbons()` and `plotly::add_sf()`) that don’t have a dedicated **plotly.js** trace type. Polygons can be use to draw many things, but perhaps the most familiar application where you might want to use `plotly::add_polygons()` is to draw geo-spatial objects. 
+
+If and when you use `plotly::add_polygons()` to draw a map, make sure you fix the aspect ratio (e.g., `xaxis.scaleanchor`) and also consider using `plotly::plotly_empty()` over `plotly::plot_ly()` to hide axis labels, ticks, and the background grid. On the other hand, Section @sec-04-custom-maps shows you how to make a custom maps using the {**sf**} package and `plotly::add_sf()`, which is a bit of work to get started, but is absolutely worth the investment.
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-03-draw-maps}
+: Drawing Maps Using {**maps**}
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-draw-maps
+#| fig-cap: "Using `plotly::add_polygons()` to make a map of Canada and major Canadian cities via data provided by the {**maps**} package."
+
+base_map <- ggplot2::map_data("world", "canada") |> 
+  dplyr::group_by(group) |> 
+  plotly::plotly_empty(x = ~long, y = ~lat, alpha = 0.2)  |> 
+  plotly::layout(showlegend = FALSE, xaxis = base::list(scaleanchor = "y"))
+  
+base_map |> 
+  plotly::add_polygons(hoverinfo = "none", color = base::I("black"))  |> 
+  plotly::add_markers(
+    text = ~base::paste(name, "<br />", pop), 
+    hoverinfo = "text", 
+    color = base::I("red"), 
+    data = maps::canada.cities)
+```
+***
+
+`ggplot2::map_data()` is a function to turn data from the {**maps**} package into a data frame suitable for plotting with {**ggplot2**}.
+
+
+::::
+:::::
 

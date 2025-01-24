@@ -7,7 +7,7 @@ execute:
     cache: true
 format: html
 ---
-# Overview {#sec-02-overview}
+# Overview {#sec-02}
 
 ```{r}
 #| label: setup
@@ -102,7 +102,7 @@ I therefore reduced the dataset from `r nrow(diamonds)` to 10^3 rows.
 :::
 ::::{.my-r-code-container}
 ```{r}
-#| label: fig-first-try
+#| label: fig-02-first-try
 #| fig-cap: "My first trial of a visualization with {*plotly*) worked but produced a (warning?) message."
 
 # create a visualizations of the diamonds dataset
@@ -113,7 +113,7 @@ plotly::plot_ly(diamonds_sample, x = ~cut)
 
 **To see the big difference between a static graph and the interactivity caused by {*plotly*} move the mouse cursor over the graphic!**
 
-If we assign variable names (e.g., `cut`, `clarity`, etc.) to visual properties (e.g., `x`, `y`, `color`, etc.) within `plotly::plot_ly()`, as done in @fig-first-try, the program tries to find a sensible geometric representation of that information for us.
+If we assign variable names (e.g., `cut`, `clarity`, etc.) to visual properties (e.g., `x`, `y`, `color`, etc.) within `plotly::plot_ly()`, as done in @fig-02-first-try, the program tries to find a sensible geometric representation of that information for us.
 
 ::: {.callout-warning #wrn-02-warning-messages}
 ###### What does the warning "No trace type specified" mean?
@@ -160,7 +160,7 @@ This difference between documentation and running code is annoying. It makes peo
 :::
 ::::{.my-r-code-container}
 ```{r}
-#| label: fig-second-try
+#| label: fig-02-second-try
 #| fig-cap: "Three examples of visualizing categorical data with `plotly::plot_ly()`: (top) mapping `cut` to `x` yields a bar chart, (middle) mapping `cut` & `clarity` to `x` & `y` yields a heatmap, and (bottom) mapping `cut` & `clarity` to `x` & `color` yields a dodged bar chart."
 #| results: hold
 
@@ -175,7 +175,7 @@ plotly::plot_ly(diamonds_sample, x = ~cut, color = ~clarity, colors = "Accent", 
 
 Here I have added the correct type to the `plotly::plot_ly()` argument to get rid of the warning message.
 
-In the bottom panel of @fig-second-try `color` is used to map each level of diamond clarity to a different color, then `colors` is used to specify the range of colors (which, in this case, the "Accent" color palette from the {**RColorBrewer**} package, but one can also supply custom color codes or a color palette function like `grDevices::colorRamp()`).
+In the bottom panel of @fig-02-second-try `color` is used to map each level of diamond clarity to a different color, then `colors` is used to specify the range of colors (which, in this case, the "Accent" color palette from the {**RColorBrewer**} package, but one can also supply custom color codes or a color palette function like `grDevices::colorRamp()`).
 
 ::: {.callout-note #nte-change-double-click-delay}
 ###### Double click delay time changed
@@ -201,7 +201,7 @@ Try the following: Zoom into the graphics by holding the mouse button and draggi
 :::
 ::::{.my-r-code-container}
 ```{r}
-#| label: fig-using-pipe
+#| label: fig-02-using-pipe
 #| fig-cap: "Create graphics with the native pipe adding a specific layer"
 
 diamonds_sample |> 
@@ -261,7 +261,7 @@ Throughout this book, you’ll see lots of examples that leverage these argument
 :::
 ::::{.my-r-code-container}
 ```{r}
-#| label: fig-wrong-map-data-values
+#| label: fig-02-wrong-map-data-values
 #| fig-cap: "Wrong direct mapping of data values to a visual range."
 
 plotly::plot_ly(diamonds_sample, x = ~cut, 
@@ -289,7 +289,7 @@ This example doesn't produce black bars as it was intended. You can't map data v
 :::
 ::::{.my-r-code-container}
 ```{r}
-#| label: fig-correct-map-data-values
+#| label: fig-02-correct-map-data-values
 #| fig-cap: "Correct direct mapping of data values to a visual range."
 
 plotly::plot_ly(
@@ -325,7 +325,7 @@ This is different to the {**ggplot2**} approach, where you can reference the col
 
 ### Adding layers
 
-In addition to `plotly::layout()` for adding/modifying part(s) of the graph’s layout in @fig-using-pipe, there are also a family of `plotly:add_*()` functions (e.g., `plotly::add_histogram()`, `plotly::add_lines()`, etc) that define how to render data into geometric objects. 
+In addition to `plotly::layout()` for adding/modifying part(s) of the graph’s layout in @fig-02-using-pipe, there are also a family of `plotly:add_*()` functions (e.g., `plotly::add_histogram()`, `plotly::add_lines()`, etc) that define how to render data into geometric objects. 
 
 Borrowing terminology from the layered grammar of graphics, these functions add a graphical layer to a plot. A *layer* can be thought of as a group of graphical elements that can be sufficiently described using only 5 components: 
 
@@ -362,7 +362,7 @@ Notice that in the examples thus far, we have not specified a layer! The layer h
 :::
 ::::{.my-r-code-container}
 ```{r}
-#| label: fig-implicite-histogram-layer
+#| label: fig-02-implicite-histogram-layer
 #| fig-cap: "Add histogram as an implicit layer to `plotly::plot_ly()`"
 
 
@@ -387,7 +387,7 @@ To prevent the warning message in using an implicite layer I have to add the typ
 :::
 ::::{.my-r-code-container}
 ```{r}
-#| label: fig-add-bar-chart-layer
+#| label: fig-02-add-bar-chart-layer
 #| fig-cap: "Add histogram as an explicite layer to `plotly::plot_ly()`"
 
 diamonds_sample |> 
@@ -450,7 +450,7 @@ In many scenarios, it can be useful to combine multiple graphical layers into a 
 :::
 ::::{.my-r-code-container}
 ```{r}
-#| label: fig-combine-multiple-layers
+#| label: fig-02-combine-multiple-layers
 #| fig-cap: "Using `plotly::add_histogram()`, `plotly::add_text()`, and {**dplyr**} verbs to compose a plot that leverages a raw form of the data (e.g., histogram) as well as a summarized version (e.g., text labels)."
 
 diamonds_sample |> 
@@ -504,11 +504,11 @@ When using {**dplyr**} verbs to modify the data underlying the plotly object, yo
 ::::
 :::::
 
-## Intro to plotly.js
+## Intro to plotly.js {#sec-03-intro-plotly-js}
 
 When you print any plotly object, the `plotly::plotly_build()` function is applied to that object, and that generates an R list which adheres to a syntax that plotly.js understands. This syntax is a JavaScript Object Notation (`r glossary("JSON")`) specification that plotly.js uses to represent, serialize, and render web graphics.
 
-![plotly workflow from R code to the graph generated in the web browser by plotly.js](img/plotly.js-working-min.png){#fig-plotly-js 
+![plotly workflow from R code to the graph generated in the web browser by plotly.js](img/plotly.js-working-min.png){#fig-02-plotly-js 
 fig-alt="Transforming R code of a simple bar graph (with values directly supplied instead of a data column name reference) to a R list via `plotly::plotly_build()` to a JSON object via `plotly::plotly_json()` to the rendered graph in the webbrowser using plotly.js" fig-align="center" 
 width="100%"}
 
@@ -687,7 +687,7 @@ For example, by including a discrete color variable (e.g., `cut`) with `ggplot2:
 :::
 ::::{.my-r-code-container}
 ```{r}
-#| label: fig-diamond-clarity-levels
+#| label: fig-02-diamond-clarity-levels
 #| fig-cap: "Frequency polygons of diamond price by diamond clarity. This visualization indicates there may be significant main effects."
 
 p <- ggplot2::ggplot(
@@ -719,7 +719,7 @@ Now, to see how price varies with both cut and clarity, we could repeat this sam
 :::
 ::::{.my-r-code-container}
 ```{r}
-#| label: fig-compare-price-per-cut-level
+#| label: fig-02-compare-price-per-cut-level
 #| fig-cap: "Diamond price by clarity and cut"
 
 
@@ -761,7 +761,7 @@ The aim of {**ggplot2**} is to aid in visual data investigations. This focus has
 :::
 ::::{.my-r-code-container}
 ```{r}
-#| label: fig-sina-plot
+#| label: fig-02-sina-plot
 #| fig-cap: "A sina-plot of diamond price by clarity and cut."
 #| echo: fenced
 #| warning: false
@@ -796,13 +796,13 @@ Another possibility would be to write a different `plotly::ggplotly()`, for inst
 
 This visualization jitters the raw data within the density for each group – allowing us not only to see where the majority observations fall within a group, but also across all groups. By making this layer interactive, we can query individual points for more information and zoom into interesting regions. 
 
-The second layer of @fig-sina-plot uses `ggplot2::stat_summary()` to overlay a 95% confidence interval estimated via a bootstrap algorithm via the {**Hmisc**} package [@Hmisc].
+The second layer of @fig-02-sina-plot uses `ggplot2::stat_summary()` to overlay a 95% confidence interval estimated via a bootstrap algorithm via the {**Hmisc**} package [@Hmisc].
 
 ### Other examples
 
 There are other examples with `GGally::ggcoef()` and `naniar::geom_miss_point()`. But these figures do not provide new knowledge. Additionally I have problems with the visualizations:
 
-1. The ilustration with `GGally::ggcoef()` (@fig-ggally-ggcoef) does not show up in the HTML page because of memory problems.
+1. The ilustration with `GGally::ggcoef()` (@fig-02-ggally-ggcoef) does not show up in the HTML page because of memory problems.
 2. The example with `naniar::geom_miss_point()` does not show the points for the missing values. This is strange as I am using the exact same code as in the book. Additionally the graphic display is empty too because of memory problems. I even failed when i used the full diamonds dataset and inspecting the result in RStudio. 
 
 I have added the example nonetheless hoping that I will a solution later.
@@ -819,7 +819,7 @@ I have added the example nonetheless hoping that I will a solution later.
 :::
 ::::{.my-r-code-container}
 ```{r}
-#| label: fig-ggally-ggcoef
+#| label: fig-02-ggally-ggcoef
 #| fig-cap: "Zooming in on a coefficient plot generated from the `GGally::ggcoef()` function"
 #| warning: false
 
@@ -833,12 +833,14 @@ plotly::ggplotly(
   gg, 
   dynamicTicks = TRUE,
   doubleClickDelay = 1000
-  )
+  ) |> 
+  plotly::partial_bundle() |> 
+  plotly::toWebGL()
 ```
 
 ***
 
-@fig-ggally-ggcoef shows how injecting interactivity into this plot allows us to query exact values and zoom in on the most interesting regions. See [video](https://vimeo.com/322362701) how to do it.
+@fig-02-ggally-ggcoef shows how injecting interactivity into this plot allows us to query exact values and zoom in on the most interesting regions. See [video](https://vimeo.com/322362701) how to do it.
 
 ::::
 :::::
@@ -849,7 +851,7 @@ Although the `diamonds` dataset does miss data, missing values are ubiquitous in
 
 The naniar package provides a suite of computational and visual resources for working with and revealing structure in missing values. Moreover, {**naniar**} provides a custom geom, `naniar::geom_miss_point()`, that can be useful for visualizing missingness structure. 
 
-@fig-naniar-missing-points demonstrates this by introducing fake missing values to the diamond price.
+@fig-02-naniar-missing-points demonstrates this by introducing fake missing values to the diamond price.
 
 :::::{.my-r-code}
 :::{.my-r-code-header}
@@ -859,7 +861,7 @@ The naniar package provides a suite of computational and visual resources for wo
 :::
 ::::{.my-r-code-container}
 ```{r}
-#| label: fig-naniar-missing-points
+#| label: fig-02-naniar-missing-points
 #| fig-cap: "Using the `naniar::geom_miss_point()` function to visualize missing values in relation to non-missing values. Missing values are shown in red."
 #| warning: false
 

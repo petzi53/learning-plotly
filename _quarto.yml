@@ -19,6 +19,7 @@ book:
     - 01-intro.qmd
     - 02-overview.qmd
     - 03-scattered-foundations.qmd
+    - 04-maps.qmd
 
 bibliography:
     - references.bib
