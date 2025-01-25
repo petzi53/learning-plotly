@@ -567,9 +567,22 @@ plotly::plot_ly() |>
 
 The {**sf**} R package is a modern approach to working with geo-spatial data structures based on tidy data principles. The key idea behind {**sf**} is that it stores geo-spatial geometries in a [list-column of a data frame](https://jennybc.github.io/purrr-tutorial/ls13_list-columns.html). This allows each row to represent the real unit of observation/interest – whether it’s a polygon, multi-polygon, point, line, or even a collection of these features – and as a result, works seamlessly inside larger tidy workflows. The {**sf**} package itself does not really provide geo-spatial data – it provides the framework and utilities for storing and computing on geo-spatial data structures in an opinionated way.
 
-There are numerous packages for accessing geo-spatial data as simple features data structures. A couple notable examples include {**rnaturalearth**} and {**USA.state.boundaries**}. The {**rnaturalearth**} package is better for obtaining any map data in the world via an API provided by https://www.naturalearthdata.com/. (See my experiments of how to apply the {**rnaturalearth**} package: [Creating Maps](https://bookdown.org/pbaumgartner/gdswr-notes/91-creating-maps.html)) The {**USA.state.boundaries**} package is great for obtaining map data for the United States at any point in history. It doesn’t really matter what tool you use to obtain or create an sf object – once you have one, `plotly::plot_ly()` knows how to render it.
+There are numerous packages for accessing geo-spatial data as simple features data structures. A couple notable examples include {**rnaturalearth**} and {**USA.state.boundaries**}. 
+
+- The {**rnaturalearth**} package is better for obtaining any map data in the world via an API provided by [https://www.naturalearthdata.com/](https://www.naturalearthdata.com/). 
+- The {**USA.state.boundaries**} package is great for obtaining map data for the United States at any point in history. 
+
+It doesn’t really matter what tool you use to obtain or create an sf object – once you have one, `plotly::plot_ly()` knows how to render it.
+
+::: {.callout-note #nte-04-creating-maps}
+See my experiments of how to apply the {**rnaturalearth**} package: [Creating Maps](https://bookdown.org/pbaumgartner/gdswr-notes/91-creating-maps.html).
+:::
+
+
 
 ### Download and save world data
+
+The following code chunk donwloads the world countries and regions of Canada using the {**rnaturalearth**} package.
 
 :::::{.my-r-code}
 :::{.my-r-code-header}
@@ -602,11 +615,14 @@ The `returnclass = "sf"` argument for simple feature from the {**sf**} package w
 ::::
 :::::
 
+### Draw world map with country names
+
+The next code chunk shows the result of my experiments with basic interactivity of the {**plotly**} packages using the {**sf**} object `world` downloaded in @cnj-04-download-save-world-data.  It displays the world and shows when you hover the cursor over the map the country names.
 
 :::::{.my-r-code}
 :::{.my-r-code-header}
 :::::: {#cnj-04-draw-world-map}
-: Draw world map with country borders
+: Draw world map with country borders showing country names
 ::::::
 :::
 ::::{.my-r-code-container}
@@ -632,6 +648,11 @@ To exerpiment with mapping {**sf**} data I have added `split = ~name` to get all
 ::::
 :::::
 
+### World map with country names & population
+
+The next code chunk experiments with basic interactivity of the {**plotly**} packages using the {**sf**} object `world` downloaded in @cnj-04-download-save-world-data.  It displays the world and shows when you hover the cursor over the map the country names.
+
+
 :::::{.my-r-code}
 :::{.my-r-code-header}
 :::::: {#cnj-04-draw-world-map-country-names}
@@ -649,7 +670,7 @@ plotly::plot_ly(
   mode = "lines",
   split = ~name, 
   color = ~pop_est, 
-  text = ~paste(name, "\nPop.", pop_est),
+  text = ~base::paste(name, "\nPop.", pop_est),
   hoveron = "fills",
   hoverinfo = "text",
   showlegend = FALSE
@@ -669,10 +690,12 @@ There are actually 4 different ways to render sf objects with plotly:
 
 These functions render multiple polygons using a single trace by default, which is fast, but you may want to leverage the added flexibility of multiple traces. For example, a given trace can only have one fillcolor, so it’s impossible to render multiple polygons with different colors using a single trace. For this reason, if you want to vary the color of multiple polygons, make sure to split by a unique identifier (e.g. name), as done in @fig-04-draw-canada-names-colors. Note that, as discussed for line charts in @fig-03-grouping-one-trace, using multiple traces automatically adds the ability to filter name via legend entries.
 
+This is essentially the exercise in @fig-04-draw-world-map with the world map.
+
 :::::{.my-r-code}
 :::{.my-r-code-header}
 :::::: {#cnj-04-draw-canada-names-colors}
-: Draw a Canada map with colored reegions and their names as tooltips
+: Draw a Canada map with colored regions and their names as tooltips
 ::::::
 :::
 ::::{.my-r-code-container}
@@ -693,6 +716,8 @@ plotly::plot_ly(
 :::::
 
 Another important feature for maps that may require you to split multiple polygons into multiple traces is the ability to display a different hover-on-fills for each polygon. By providing text that is unique within each polygon and specifying `hoveron='fills'`, the tooltip behavior is tied to the trace’s fill (instead of displayed at each point along the polygon).
+
+This is essentially the exercise in @fig-04-draw-world-map-country-names with the world map.
 
 :::::{.my-r-code}
 :::{.my-r-code-header}
@@ -721,7 +746,7 @@ plotly::plot_ly(
 ::::
 :::::
 
-Although the integrated mapping approaches (`plotly::plot_mapbox()` and `plotly::plot_geo()`) can render `sf` objects, the custom mapping approaches (`plotly::plot_ly()` and `ggplot2::geom_sf()`) are more flexible because they allow for any well-defined mapping projection. Working with and understanding map projections can be intimidating for a causal map maker. Thankfully, there are nice resources for searching map projections in a human-friendly interface, like http://spatialreference.org/. Through this website, one can search desirable projections for a given portion of the globe and extract commands for projecting their geo-spatial objects into that projection. One way to perform the projection is to supply the relevant PROJ4 command to the `sf::st_transform()` function in {**sf**}.
+Although the integrated mapping approaches (`plotly::plot_mapbox()` and `plotly::plot_geo()`) can render `sf` objects, the custom mapping approaches (`plotly::plot_ly()` and `ggplot2::geom_sf()`) are more flexible because they allow for any well-defined mapping projection. Working with and understanding map projections can be intimidating for a causal map maker. Thankfully, there are nice resources for searching map projections in a human-friendly interface, like [http://spatialreference.org/](http://spatialreference.org/). Through this website, one can search desirable projections for a given portion of the globe and extract commands for projecting their geo-spatial objects into that projection. One way to perform the projection is to supply the relevant PROJ4 command to the `sf::st_transform()` function in {**sf**}.
 
 :::::{.my-r-code}
 :::{.my-r-code-header}
@@ -780,18 +805,20 @@ plotly::ggplotly(p)
 
 `r glossary("Cartogram", "Cartograms")` distort the size of geo-spatial polygons to encode a numeric variable other than the land size. Cartograms have been shown to be an effective approach to both encode and teach about geo-spatial data.
 
-The R package {**cartogram**} provides an interface to several popular cartogram algorithms. A number of other R packages provide cartogram algorithms, but the great thing about {**cartogram**} is that all the functions can take an {**sf**} (or {**sp**}) object as input and return an `sf` object. This makes it incredibly easy to go from raw spatial objects, to transformed objects, to visual.
+The R package {**cartogram**} provides an interface to several popular cartogram algorithms. A number of other R packages provide cartogram algorithms, but the great thing about {**cartogram**} is that all the functions can take an {**sf**} (or {**sp**}) object as input and return an `sf` object. This makes it incredibly easy to go from raw spatial objects, to transformed objects, to visual. Instead of the contiguous US population example in the book my @fig-africa-pop demonstrates a contiguous area cartogram of the African population using a rubber sheet distortion algorithm [@dougenik-1985].
 
 ::: {.callout-warning #wrn-04-albersusa-not-working}
 ###### {albersusa} package uses old-style CRS object
 
-I can't reproduce the following book examples because the {**albersusa**} package uses an old-style CRS object. I do not know how to transform (recreate) the object with a recent `sf::st_crs()`. (I tried to transform it with `sf::st_transform(us_cont, crs=3310)` but the plotly::plot_ly() function threw an error message:
+I can't reproduce the following book examples because the {**albersusa**} package uses an old-style CRS object. I do not know how to transform (recreate) the object with a recent `sf::st_crs()`. (I tried to transform it with `sf::st_transform(us_cont, crs=3310)` but the `plotly::plot_ly()` function threw an error message:
 
 > "Error in st_coordinates.sfc(sf::st_geometry(model)):    
 not implemented for objects of class sfc_GEOMETRY)
 
-I tried to create equivalent figures using the demonstrations from the {**cartogram**} package.
+I am trying to create equivalent figures using the demonstrations from the {**cartogram**} package.
 :::
+
+#### Continuous Area Cartogram
 
 :::::{.my-r-code}
 :::{.my-r-code-header}
@@ -819,16 +846,23 @@ sf::st_geometry(afr) <- "afr"
 ## project the map
 afr <- sf::st_transform(afr, 3395)
 
+
+
 ## construct cartogram
 afr_cont <- cartogram::cartogram_cont(afr, "pop_est", itermax = 5)
 
 ## plot it after changing tmap v3 code converted to v4
 # `tm_polygons()`: instead of `style = "jenks"`, use fill.scale = `tm_scale_intervals()`.
-tmap::tm_shape(afr_cont) + 
+p_cont <- tmap::tm_shape(afr_cont) + 
   tmap::tm_polygons("pop_est", fill.scale = tmap::tm_scale_intervals()) +
   tmap::tm_layout(frame = FALSE, legend.position = c("left", "bottom"))
-
+p_cont
 ```
+
+
+
+::::
+:::::
 
 :::::{.my-remark}
 :::{.my-remark-header}
@@ -837,15 +871,265 @@ tmap::tm_shape(afr_cont) +
 ::::::
 :::
 ::::{.my-remark-container}
-At the moment I do not know how to get an interactive cartogram. Using `plotly::plot_ly()` I got the following error message:
+The above graphic is not interactive and therefore not equivalent to the books figure 4.13 (using Africa instead of the Albers USA projection). But whenever I used `plotly::plot_ly(afr_cont)` to get an interactive contiguous area cartogram I received the following error message:
 
 > Error in st_coordinates.sfc(sf::st_geometry(model)) :    
   not implemented for objects of class sfc_GEOMETRY
+  
+Finally my Brave browser KI provided the solution:
+
+> The error you’re encountering, 'Error in st_coordinates.sfc(sf::st_geometry(model)) : not implemented for objects of class sfc_GEOMETRY', occurs because the st_coordinates() function does not know how to handle objects of class sfc_GEOMETRY. This class represents a general geometry type in the sf package, which is why st_coordinates() does not have a specific implementation for it.
+
+> To resolve this issue, you can try converting the geometry to a more specific type, such as MULTIPOLYGON, before calling st_coordinates(). For example:
+
+```
+model %>% 
+  st_cast("MULTIPOLYGON") %>% 
+  st_coordinates()
+```
+
+> This approach may provide the coordinates you need, as st_coordinates() is implemented for more specific geometry types like MULTIPOLYGON.
+
+See [GitHub Issue #584](https://github.com/r-spatial/sf/issues/584): st_coordinates() doesn't know about sfc_GEOMETRY
+
+::::
+:::::
+
+@fig-04-cont-int-africa-pop demonstrates now the interactivity and contiguous population information for Africa equivalent to the Plotly book example in figure 4.13.
+
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-04-cont-int-africa-pop}
+: Contiguous interactive area cartogram of Africa's population
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-04-cont-int-africa-pop
+#| fig-cap: "Contiguous area cartogram of African population"
+
+afr_cont1 <- afr_cont |> 
+  sf::st_cast("MULTIPOLYGON")
+
+plotly::plot_ly(
+  afr_cont1,
+  type = "scatter",
+  mode = "lines"
+    )  |>  
+  plotly::add_sf(
+    color = ~pop_est, 
+    split = ~name, 
+    span = base::I(1),
+    text = ~base::paste(name, "\nPop.", base::round(pop_est / 10^6), "M"),
+    hoverinfo = "text",
+    hoveron = "fills"
+  )  |> 
+  plotly::layout(showlegend = FALSE)  |> 
+  plotly::colorbar(title = "Population")
+```
+
+::::
+:::::
+
+#### Non-Overlapping Circles Cartogram
+
+
+@fig-04-dorling demonstrates a non-overlapping circle cartogram of the African population, also called Dorling cartogram [@dorling-2011]. This cartogram does not try to preserve the shape of polygons (i.e., states), but instead uses circles to represent each geo-spatial object, then encodes the variable of interest (i.e., population) using the area of the circle.
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-04-non-overlapping-circles}
+: Non-Overlapping Circles Cartogram with tmap (non-interactive)
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-04-non-overlapping-circles
+#| fig-cap: "A Non-Overlapping Non-Interactive Circles Cartogram With {**tmap**} (non-interactive)."
+
+# construct cartogram
+afr_dorling <- cartogram::cartogram_dorling(afr, "pop_est")
+
+
+# plot it
+p_dorling <- tmap::tm_shape(afr) + 
+  tmap::tm_borders() +
+  tmap::tm_shape(afr_dorling) + 
+  tmap::tm_polygons("pop_est", fill.scale = tmap::tm_scale_intervals()) +
+  tmap::tm_layout(frame = FALSE, legend.position = c("left", "bottom"))
+p_dorling
+
+```
+
+::::
+:::::
+
+The following figure tries to apply interactivity with the {**plotly**} package to the dorling cartogram.
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-04-dorling}
+: An interactive dorling cartogram of the African population
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-04-dorling
+#| fig-cap: "A dorling cartogram of the African population. A dorling cartogram sizes the circles proportional to some metric (e.g., population)."
+
+afr_dor <- cartogram::cartogram_dorling(afr, "pop_est") |>
+  sf::st_cast("MULTIPOLYGON")
+
+plotly::plot_ly(
+  type = "scatter",
+  mode = "lines",
+  stroke = base::I("black")
+  ) |> 
+  plotly::add_sf(
+  data = afr,
+  color = base::I("gray95"),
+  span = base::I(1),
+  hoverinfo = "none"
+  ) |>
+  plotly::add_sf(
+    data = afr_dor, 
+    color = ~pop_est,
+    split = ~name, 
+    text = ~base::paste(name, "\nPop.", base::round(pop_est / 10^6), "M"),
+    hoverinfo = "text", 
+    hoveron = "fills"
+  )  |> 
+  plotly::layout(showlegend = FALSE) |> 
+  plotly::colorbar(title = "Population")
+```
+***
+
+::: {.callout-warning #wrn-04-distorted-african-continent}
+###### I don't know why the African background map and its layers are distorted.
+:::
+
+
+::::
+:::::
+
+@fig-04-without-background-map shows the dorling cartogram without the background map of Africa.
+
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-04-without-African-background-map}
+: Dorling cartogram without African background map
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-04-without-background-map
+#| fig-cap: "An experiment: Dorling cartogram without African background map."
+
+utils::data("World", package = "tmap")
+
+Africa <- World |>  
+dplyr::filter(continent == "Africa") |> 
+  sf::st_transform(3395)
+  
+
+plotly::plot_ly(
+  afr_dor,
+  type = "scatter",
+  mode = "lines"
+    )  |>  
+  plotly::add_sf(
+    color = ~pop_est, 
+    split = ~name, 
+    span = base::I(1),
+    text = ~base::paste(name, "\nPop.", base::round(pop_est / 10^6), "M"),
+    hoverinfo = "text",
+    hoveron = "fills"
+  )  |> 
+  plotly::layout(showlegend = FALSE)  |> 
+  plotly::colorbar(title = "Population")
+```
+***
+
+The exerpiment shows the correct (undistorted) population layer but without the background map with the African country borders. This justifies the conclusion that the problem is with the projection of `afr`. Just plotting `afr` confirms this assumption. But then I do not know why using `cartogram::cartogram_cont` in @fig-04-cont-int-africa-pop worked without a distorted `afr` background map. 
 ::::
 :::::
 
 
+#### Non-contiguous Area Cartogram
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-04-non-contiguous-african-cartogram}
+: Non-contiguous Area Cartogram with {**tmap**} non-interactive
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-04-non-contiguous-african-cartogram
+
+# construct cartogram
+afr_ncont <- cartogram::cartogram_ncont(afr, "pop_est")
+
+# plot it
+tmap::tm_shape(afr) + 
+  tmap::tm_borders() +
+  tmap::tm_shape(afr_ncont) + 
+  tmap::tm_polygons("pop_est", fill.scale = tmap::tm_scale_intervals()) +
+  tmap::tm_layout(frame = FALSE, legend.position = c("left", "bottom"))
+```
+
 ::::
 :::::
 
+
+@fig-04-non-contiguous-cartogram demonstrates a non-contiguous cartogram of the African population [@olson-1976]. In contrast to the Dorling cartogram, this approach does preserve the shape of polygons. The implementation behind @fig-04-non-contiguous-cartogram is to simply take the implementation of @fig-04-dorling and change `cartogram::cartogram_dorling()` to `cartogram::cartogram_ncont()`.
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-04-non-contiguous-cartogram}
+: Non-contiguous cartogram of the African population
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-04-non-contiguous-cartogram
+#| fig-cap: "A non-contiguous cartogram of African population that preserves shape."
+
+
+afr_ncont <- cartogram::cartogram_ncont(afr, "pop_est") |> 
+  sf::st_cast("MULTIPOLYGON")
+
+plotly::plot_ly(
+  type = "scatter",
+  mode = "lines",
+  stroke = base::I("black"), 
+  span = base::I(1)
+  ) |> 
+  plotly::add_sf(
+    data = afr,
+    color = base::I("gray95"),
+    hoverinfo = "none"
+  ) |> 
+  plotly::add_sf(
+    data = afr_ncont, 
+    color = ~pop_est,
+    split = ~name, 
+    text = ~base::paste(name, "\nPop.", base::round(pop_est / 10^6), "M"),
+    hoverinfo = "text", 
+    hoveron = "fills"
+  )  |> 
+  plotly::layout(showlegend = FALSE) |> 
+  plotly::colorbar(title = "Population")
+```
+
+
+::: {.callout-warning #wrn-04-distorted-african-continent-2}
+###### Again: I don't know why the map is distorted.
+:::
+
+
+::::
+:::::
 
