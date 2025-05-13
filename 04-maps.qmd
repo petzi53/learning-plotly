@@ -635,8 +635,8 @@ world <- base::readRDS("data/Chapter4/world.rds")
 plotly::plot_ly(world,
                 type = "scatter",
                 mode = "lines",
-                color = base::I("gray90"), 
-                stroke = base::I("black"), 
+                color = base::I("gray90"),
+                stroke = base::I("black"),
                 span = base::I(1),
                 split = ~name
                 ) |> 
@@ -644,10 +644,13 @@ plotly::plot_ly(world,
 ```
 ***
 
-To exerpiment with mapping {**sf**} data I have added `split = ~name` to get all country names. To prevent the very long legend list of country names I have added `plotly::hide_legend()`. --- Another way to hide legend would be the argument `showlegend = FALSE` inside the `plotly::plot_ly()` function (instead of `plotly::hide_legend()`).
+To experiment with mapping {**sf**} data I have added `split = ~name` to get all country names. (For more details see: code comment before [Figure 3.2](https://plotly-r.com/scatter-traces#fig:scatter-lines) and the paragraph and code before [Figure 4.10](https://plotly-r.com/maps#fig:split-color))
+
+(I could find parameter 'split' with `plotly::schema()` only in "traces.candlestick.attributes.hoverlabel.split" and "traces.ohlc.attributes.hoverlabel.split" but not for "traces.scatter…")
+
+To prevent the very long legend list of country names I have added `plotly::hide_legend()`. --- Another way to hide legend would be the argument `showlegend = FALSE` inside the `plotly::plot_ly()` function (instead of `plotly::hide_legend()`).
 ::::
 :::::
-
 ### World map with country names & population
 
 The next code chunk experiments with basic interactivity of the {**plotly**} packages using the {**sf**} object `world` downloaded in @cnj-04-download-save-world-data.  It displays the world and shows when you hover the cursor over the map the country names.
@@ -748,6 +751,7 @@ plotly::plot_ly(
 
 Although the integrated mapping approaches (`plotly::plot_mapbox()` and `plotly::plot_geo()`) can render `sf` objects, the custom mapping approaches (`plotly::plot_ly()` and `ggplot2::geom_sf()`) are more flexible because they allow for any well-defined mapping projection. Working with and understanding map projections can be intimidating for a causal map maker. Thankfully, there are nice resources for searching map projections in a human-friendly interface, like [http://spatialreference.org/](http://spatialreference.org/). Through this website, one can search desirable projections for a given portion of the globe and extract commands for projecting their geo-spatial objects into that projection. One way to perform the projection is to supply the relevant PROJ4 command to the `sf::st_transform()` function in {**sf**}.
 
+
 :::::{.my-r-code}
 :::{.my-r-code-header}
 :::::: {#cnj-04-pop-canada-mollweide-proj}
@@ -760,7 +764,7 @@ Although the integrated mapping approaches (`plotly::plot_mapbox()` and `plotly:
 #| fig-cap: "The population of various Canadian cities rendered on a custom basemap using a Mollweide projection."
 
 ## load data
-# world <- base::readRDS("data/Chapter4/world.rds")
+world <- base::readRDS("data/Chapter4/world.rds")
 
 ## filter the world sf object down to canada
 canada <- dplyr::filter(world, name == "Canada")
@@ -781,6 +785,10 @@ cities <- sf::st_as_sf(
 moll_proj <- "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 
 +units=m +no_defs"
 
+## but 'moll_proj <- "+proj=moll' works as well
+## all the other parameters are optional
+
+
 ## perform the projections
 canada <- sf::st_transform(canada, moll_proj)
 cities <- sf::st_transform(cities, moll_proj)
@@ -797,9 +805,6 @@ plotly::ggplotly(p)
 
 ::::
 :::::
-
-
-
 
 ### Cartograms {#sec-04-cartograms}
 
