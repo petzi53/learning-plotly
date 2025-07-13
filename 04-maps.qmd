@@ -123,8 +123,8 @@ The Mapbox basemap styling is controlled through the `layout.mapbox.style` attri
 
 mapbox_styles <- plotly::schema()$layout$layoutAttributes$mapbox$style$values
 
-pb_create_folder("data")
-pb_save_data_file("Chapter4", mapbox_styles, "mapbox_styles.rds")
+my_create_folder("data")
+my_save_data_file("Chapter4", mapbox_styles, "mapbox_styles.rds")
 ```
 
 ***

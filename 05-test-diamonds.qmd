@@ -1,0 +1,290 @@
+---
+knitr: 
+    opts_chunk: 
+      code-fold: show
+      results: hold
+  
+---
+
+::::: {#obj-chap03}
+:::: {.my-objectives}
+::: {.my-objectives-header}
+Chapter section list
+:::
+
+::: {.my-objectives-container}
+
+
+
+:::
+::::
+:::::
+
+# Overview {#sec-02}
+
+```{r}
+#| label: setup
+#| results: hold
+#| include: false
+
+base::source(file = paste0(here::here(), "/R/helper.R"))
+
+ggplot2::theme_set(ggplot2::theme_bw())
+```
+
+
+There are two main ways to creating a plotly object: 
+
+1. by transforming a {**ggplot2**} object via `plotly::ggplotly()` into a plotly object or 
+2. by directly initializing a plotly object with `plotly::plot_ly()`/`plotly::plot_geo()`/`plotly::plot_mapbox()`.
+
+Both approaches have somewhat complementary strengths and weaknesses, so it can pay off to learn both approaches.
+
+This introductory chapter outlines some over-arching concepts related to plotly in general. It also provides definitions for terminology used throughout the book and introduces some concepts useful for understanding the infrastructure behind any plotly object.
+
+::: {.callout-note #nte-unnecessary-details}
+###### Unnesseary details?
+
+> Most of these details aren’t necessarily required to get started with plotly, but it will inevitably help you get ‘un-stuck’, write better code, and do more advanced things with plotly. (p.23)
+
+Is it --- didactically speaking --- a good idea to start with not necessary details?
+:::
+
+## Intro to `plot_ly()`
+
+Any graph made with the {**plotly**} R package is powered by the JavaScript library [plotly.js](https://github.com/plotly/plotly.js). The `plotly::plot_ly()` function provides a ‘direct’ interface to plotly.js.
+
+
+### First `plot_ly()` examples
+
+::: {.my-code-collection}
+:::: {.my-code-collection-header}
+::::: {.my-code-collection-icon}
+:::::
+:::::: {#exm-02-intro-plotly}
+::::::
+
+::::
+
+::::{.my-code-collection-container}
+
+::: {.panel-tabset}
+
+###### Load data
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-intro-plotly}
+: Load and inspect data
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: load-data
+#| eval: false
+
+utils::data(diamonds, package = "ggplot2")
+
+base::set.seed(100)
+diamonds_sample <- tibble::as_tibble(diamonds) |> 
+  dplyr::slice_sample(n = 10000)
+
+my_create_folder("data")
+my_save_data_file("Chapter2", diamonds_sample, "diamonds_sample.rds")
+```
+
+::: {.callout-caution #cau-02-memory-problems}
+###### Memory problem with big `diamonds` dataset
+
+After several calls to `plotly::plot_ly()` or `plotly::ggplotly()` I ran out of memory and the graphs didn't show up in the browser from this point on.
+
+I therefore reduced the dataset from `r nrow(ggplot2::diamonds)` to 10^3 rows.
+:::
+
+
+
+::::
+:::::
+
+
+###### First try
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-first-try}
+: First try with warning message
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-02-first-try
+#| fig-cap: "My first trial of a visualization with {*plotly*) worked but produced a (warning?) message."
+
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
+
+# create a visualizations of the diamonds dataset
+plotly::plot_ly(diamonds_sample, x = ~cut)
+```
+
+***
+
+**To see the big difference between a static graph and the interactivity caused by {*plotly*} move the mouse cursor over the graphic!**
+
+If we assign variable names (e.g., `cut`, `clarity`, etc.) to visual properties (e.g., `x`, `y`, `color`, etc.) within `plotly::plot_ly()`, as done in @fig-02-first-try, the program tries to find a sensible geometric representation of that information for us.
+
+::: {.callout-warning #wrn-02-warning-messages}
+###### What does the warning "No trace type specified" mean?
+
+As you can see I got a warning message. This happened with all three offered examples. For the first and third visualization a trace of "histogram" seems appropriate, for the second one a "histogram2d".). This message is neither mentioned in the book (first edition) nor in the online version of the book.
+
+An internet recherche uncovered [two different methods to get rid of these messages](https://github.com/plotly/plotly.R/issues/1202).
+
+1. Add the correct type as argument. For example `plotly::plot_ly(diamonds, x = ~cut, type = "histogram")`
+2. Write a small function:
+
+``` R
+suppressPlotlyMessage <- function(p) {
+  suppressMessages(plotly_build(p))
+}
+
+suppressPlotlyMessage(plotly::plot_ly(diamonds, x = ~cut))
+```
+
+The first one is easier to use and it is the more general method too.
+:::
+
+:::::{.my-remark}
+:::{.my-remark-header}
+This difference between documentation and running code is annoying. It makes people completely new to {*plotly*} uncertain, especially as this is the first example in the tutorial!
+:::
+
+:::::
+
+
+
+
+::::
+:::::
+
+
+###### Second try
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-second-try}
+: Second try without warning messages
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-02-second-try
+#| fig-cap: "Three examples of visualizing categorical data with `plotly::plot_ly()`: (top) mapping `cut` to `x` yields a bar chart, (middle) mapping `cut` & `clarity` to `x` & `y` yields a heatmap, and (bottom) mapping `cut` & `clarity` to `x` & `color` yields a dodged bar chart."
+#| results: hold
+
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
+
+# create three visualizations of the diamonds dataset
+plotly::plot_ly(diamonds_sample, x = ~cut, type = "histogram")
+plotly::plot_ly(diamonds_sample, x = ~cut, y = ~clarity, type = "histogram2d")
+plotly::plot_ly(diamonds_sample, x = ~cut, color = ~clarity, colors = "Accent", type = "histogram") |> 
+    plotly::config(doubleClickDelay = 1000)
+```
+
+***
+
+Here I have added the correct type to the `plotly::plot_ly()` argument to get rid of the warning message.
+
+In the bottom panel of @fig-02-second-try `color` is used to map each level of diamond clarity to a different color, then `colors` is used to specify the range of colors (which, in this case, the "Accent" color palette from the {**RColorBrewer**} package, but one can also supply custom color codes or a color palette function like `grDevices::colorRamp()`).
+
+::: {.callout-note #nte-change-double-click-delay}
+###### Double click delay time changed
+
+In the last example I have changed the delay for double clicks. This setting determines the maximum delay between two consecutive clicks to be interpreted as a double-click, measured in milliseconds. By default, the timing is set to 300 ms (less than half a second). My code sets the double-click delay to 1000 milliseconds (1 second).
+
+Try the following: Zoom into the graphics by holding the mouse button and dragging the cursor to the desired zoom rectangle. Then return to the original graphics by a relaxed double click. Try this for the first and for the third graphics. You will see that in the first graph you must provide a double click with a very short delay to return to the full view, whereas in the third graphics it is much easier.
+:::
+
+
+
+
+::::
+:::::
+
+###### Using pipe
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-using-pipe}
+: Use pipe to modify the generic `plotly::plot_ly()` call
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-02-using-pipe
+#| fig-cap: "Create graphics with the native pipe adding a specific layer"
+
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
+
+diamonds_sample |> 
+  plotly::plot_ly(x = ~cut, type = "histogram")  |> 
+  plotly::layout(title = "My beautiful histogram")
+```
+
+***
+
+(Almost) every function anticipates a plotly object as input to it’s first argument and returns a modified version of that plotly object. Furthermore, that modification is completely determined by the input values to the function (i.e., it doesn’t rely on any side-effects, unlike, for example, base R graphics). 
+
+Here I have added with `plotly::layout()` to modify by adding parts to the `plotly::plot_ly()` function using the (native) pipe (`|>`) which was introduced into R with version 4.1.0, released May 2021. The base pipe operator allows you to direct the left-hand side object as the first argument into the function call on the right-hand side. This facilitates creating and reading code. (But note that there are [some differences](https://www.tidyverse.org/blog/2023/04/base-vs-magrittr-pipe/) to the {**magrittr**} pipe used in the Plotly book.)
+
+There is a huge amount of different arguments for the `plotly::layout()` function (See R [Figure Reference: layout](https://plotly.com/r/reference/layout/).
+::::
+:::::
+
+:::
+
+::::
+:::::
+
+
+The `plotly::plot_ly()` function has numerous arguments that are unique to the R package (e.g., `color`, `stroke`, `span`, `symbol`, `linetype`, etc) and make it easier to encode data variables (e.g., diamond clarity) as visual properties (e.g., `color`). By default, these arguments map values of a data variable to a visual range defined by the plural form of the argument.
+
+#### GGally example
+
+{**GGally**} extends {**ggplot2**} by adding several functions to reduce the complexity of combining geometric objects with transformed data. Some of these functions include a pairwise plot matrix, a two group pairwise plot matrix, a parallel coordinates plot, a survival plot, and several functions to plot networks.
+
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-02-ggally-ggcoef}
+: Visualizing the coefficient estimates and their standard errors 
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: fig-02-ggally-ggcoef
+#| fig-cap: "Zooming in on a coefficient plot generated from the `GGally::ggcoef()` function"
+#| warning: false
+#| eval: false
+
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
+m <- stats::lm(
+  log(price) ~ log(carat) + cut, 
+  data = diamonds_sample)
+
+gg <- GGally::ggcoef(m)
+# dynamicTicks means generate new axis ticks on zoom
+plotly::ggplotly(
+  gg, 
+  dynamicTicks = TRUE,
+  doubleClickDelay = 1000
+  ) |> 
+  plotly::partial_bundle() |> 
+  plotly::toWebGL()
+```
+
+***
+
+@fig-02-ggally-ggcoef shows how injecting interactivity into this plot allows us to query exact values and zoom in on the most interesting regions. See [video](https://vimeo.com/322362701) how to do it.
+
+::::
+:::::
+

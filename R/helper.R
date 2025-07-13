@@ -6,8 +6,9 @@
 ## - my_glance_data: glance at a specified number of random data
 ## - my_qq_plot: create histogram with overlaid dnorm curve
 ## - my_scatter: create scatterplot with lm and loess curve
+## - my_create_folder: check if folder already exists at parameter "path"
+## - my_save_data_file: save data file for the specified chapter
 ## - list_plotter: plot color list as a palette
-## - save_data_file: save data file
 ## - pkgs_dl: package downloads
 ## - t_col: transparent colors
 ##########################################################
@@ -290,7 +291,7 @@ list_plotter <- function(color_list, names, package_name) {
 }
 
 ################################################################
-# pb_create_folder:
+# my_create_folder:
 # Purpose:
 # check if folder already exists at parameter "path"
 # if not, then create folder
@@ -298,7 +299,7 @@ list_plotter <- function(color_list, names, package_name) {
 # path = character string:
 #                example: "/Users/xxyyzz/Documents/my-data/"
 ################################################################
-pb_create_folder <- function(path){
+my_create_folder <- function(path){
 
   if (!base::file.exists(path))
     {base::dir.create(path)}
@@ -306,7 +307,7 @@ pb_create_folder <- function(path){
 
 
 ################################################################
-# save_data_file: Save data file for the specified chapter
+# my_save_data_file: Save data file for the specified chapter
 # Purpose:
 # If folder not exists, create it and save object as .rds file
 # Author: Peter Baumgartner
@@ -318,7 +319,7 @@ pb_create_folder <- function(path){
 # # See: https://bookdown.org/pbaumgartner/swr-harris/
 ################################################################
 
-pb_save_data_file <- function(chapter_folder, object, file_name){
+my_save_data_file <- function(chapter_folder, object, file_name){
     data_folder <- base::paste0(here::here(), "/data/")
     if (!base::file.exists(data_folder))
     {base::dir.create(data_folder)}

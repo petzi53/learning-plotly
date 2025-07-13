@@ -3,10 +3,8 @@ knitr:
     opts_chunk: 
       code-fold: show
       results: hold
-execute:
-    cache: true
-format: html
 ---
+
 # Overview {#sec-02}
 
 ```{r}
@@ -44,6 +42,30 @@ Any graph made with the {**plotly**} R package is powered by the JavaScript libr
 
 ### First `plot_ly()` examples
 
+:::::{.my-r-code}
+:::{.my-r-code-header}
+:::::: {#cnj-ID-text}
+: Numbered R Code Title
+::::::
+:::
+::::{.my-r-code-container}
+```{r}
+#| label: code-chunk-name
+#| fig-cap: "My first trial of a visualization with {*plotly*) worked but produced a (warning?) message."
+
+library(ggplot2)
+library(plotly)
+
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
+
+# create a visualizations of the diamonds dataset
+plotly::plot_ly(diamonds_sample, x = ~cut, type = "histogram")
+```
+
+::::
+:::::
+
+
 
 ::: {.my-code-collection}
 :::: {.my-code-collection-header}
@@ -69,14 +91,16 @@ Any graph made with the {**plotly**} R package is powered by the JavaScript libr
 ::::{.my-r-code-container}
 ```{r}
 #| label: load-data
-
+#| eval: false
 
 utils::data(diamonds, package = "ggplot2")
-
 
 base::set.seed(100)
 diamonds_sample <- tibble::as_tibble(diamonds) |> 
   dplyr::slice_sample(n = 10000)
+
+my_create_folder("data")
+my_save_data_file("Chapter2", diamonds_sample, "diamonds_sample.rds")
 ```
 
 ::: {.callout-caution #cau-02-memory-problems}
@@ -84,8 +108,9 @@ diamonds_sample <- tibble::as_tibble(diamonds) |>
 
 After several calls to `plotly::plot_ly()` or `plotly::ggplotly()` I ran out of memory and the graphs didn't show up in the browser from this point on.
 
-I therefore reduced the dataset from `r nrow(diamonds)` to 10^3 rows.
+I therefore reduced the dataset from `r nrow(ggplot2::diamonds)` to 10^3 rows.
 :::
+
 
 
 ::::
@@ -104,6 +129,8 @@ I therefore reduced the dataset from `r nrow(diamonds)` to 10^3 rows.
 ```{r}
 #| label: fig-02-first-try
 #| fig-cap: "My first trial of a visualization with {*plotly*) worked but produced a (warning?) message."
+
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
 
 # create a visualizations of the diamonds dataset
 plotly::plot_ly(diamonds_sample, x = ~cut)
@@ -164,6 +191,8 @@ This difference between documentation and running code is annoying. It makes peo
 #| fig-cap: "Three examples of visualizing categorical data with `plotly::plot_ly()`: (top) mapping `cut` to `x` yields a bar chart, (middle) mapping `cut` & `clarity` to `x` & `y` yields a heatmap, and (bottom) mapping `cut` & `clarity` to `x` & `color` yields a dodged bar chart."
 #| results: hold
 
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
+
 # create three visualizations of the diamonds dataset
 plotly::plot_ly(diamonds_sample, x = ~cut, type = "histogram")
 plotly::plot_ly(diamonds_sample, x = ~cut, y = ~clarity, type = "histogram2d")
@@ -203,6 +232,8 @@ Try the following: Zoom into the graphics by holding the mouse button and draggi
 ```{r}
 #| label: fig-02-using-pipe
 #| fig-cap: "Create graphics with the native pipe adding a specific layer"
+
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
 
 diamonds_sample |> 
   plotly::plot_ly(x = ~cut, type = "histogram")  |> 
@@ -264,6 +295,8 @@ Throughout this book, you’ll see lots of examples that leverage these argument
 #| label: fig-02-wrong-map-data-values
 #| fig-cap: "Wrong direct mapping of data values to a visual range."
 
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
+
 plotly::plot_ly(diamonds_sample, x = ~cut, 
                 color = "black",
                 type = "histogram")
@@ -292,6 +325,7 @@ This example doesn't produce black bars as it was intended. You can't map data v
 #| label: fig-02-correct-map-data-values
 #| fig-cap: "Correct direct mapping of data values to a visual range."
 
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
 plotly::plot_ly(
   diamonds_sample, 
   x = ~cut, 
@@ -365,7 +399,7 @@ Notice that in the examples thus far, we have not specified a layer! The layer h
 #| label: fig-02-implicite-histogram-layer
 #| fig-cap: "Add histogram as an implicit layer to `plotly::plot_ly()`"
 
-
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
 plotly::plot_ly(diamonds_sample, 
                 x = ~cut,
                 type = "histogram"
@@ -390,6 +424,7 @@ To prevent the warning message in using an implicite layer I have to add the typ
 #| label: fig-02-add-bar-chart-layer
 #| fig-cap: "Add histogram as an explicite layer to `plotly::plot_ly()`"
 
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
 diamonds_sample |> 
   plotly::plot_ly() |> 
   plotly::add_histogram(x = ~cut)
@@ -453,6 +488,7 @@ In many scenarios, it can be useful to combine multiple graphical layers into a 
 #| label: fig-02-combine-multiple-layers
 #| fig-cap: "Using `plotly::add_histogram()`, `plotly::add_text()`, and {**dplyr**} verbs to compose a plot that leverages a raw form of the data (e.g., histogram) as well as a summarized version (e.g., text labels)."
 
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
 diamonds_sample |> 
   plotly::plot_ly(x = ~cut) |>         # (1)
   plotly::add_histogram()  |>          # (2)
@@ -482,6 +518,7 @@ diamonds_sample |>
 ```{r}
 #| label: debugging-multiple-layers
 
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
 diamonds_sample |> 
   plotly::plot_ly(x = ~cut) |>  
   plotly::add_histogram()  |>   
@@ -506,7 +543,7 @@ When using {**dplyr**} verbs to modify the data underlying the plotly object, yo
 
 ## Intro to plotly.js {#sec-03-intro-plotly-js}
 
-When you print any plotly object, the `plotly::plotly_build()` function is applied to that object, and that generates an R list which adheres to a syntax that plotly.js understands. This syntax is a JavaScript Object Notation (`r glossary("JSON")`) specification that plotly.js uses to represent, serialize, and render web graphics.
+When you print any plotly object, the `plotly::plotly_build()` function is applied to that object, and that generates an R list which adheres to a syntax that plotly.js understands. This syntax is a JavaScript Object Notation (`r glossary("JSONx", "JSON")`) specification that plotly.js uses to represent, serialize, and render web graphics.
 
 ![plotly workflow from R code to the graph generated in the web browser by plotly.js](img/plotly.js-working-min.png){#fig-02-plotly-js 
 fig-alt="Transforming R code of a simple bar graph (with values directly supplied instead of a data column name reference) to a R list via `plotly::plotly_build()` to a JSON object via `plotly::plotly_json()` to the rendered graph in the webbrowser using plotly.js" fig-align="center" 
@@ -533,13 +570,14 @@ As the diagram suggests, both the `plotly::plotly_build()` and `plotly::plotly_j
 :::::{.my-r-code}
 :::{.my-r-code-header}
 :::::: {#cnj-02-show-json-object}
-: Show `r glossary("JSON")` object
+: Show `r glossary("JSONx", "JSON")` object
 ::::::
 :::
 ::::{.my-r-code-container}
 ```{r}
 #| label: show-json
 
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
 p <- plotly::plot_ly(
   diamonds_sample, 
   x = ~cut, 
@@ -690,6 +728,7 @@ For example, by including a discrete color variable (e.g., `cut`) with `ggplot2:
 #| label: fig-02-diamond-clarity-levels
 #| fig-cap: "Frequency polygons of diamond price by diamond clarity. This visualization indicates there may be significant main effects."
 
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
 p <- ggplot2::ggplot(
   diamonds_sample, 
   ggplot2::aes(
@@ -722,7 +761,7 @@ Now, to see how price varies with both cut and clarity, we could repeat this sam
 #| label: fig-02-compare-price-per-cut-level
 #| fig-cap: "Diamond price by clarity and cut"
 
-
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
 p2 <- ggplot2::ggplot(
     diamonds_sample, 
     ggplot2::aes(
@@ -766,6 +805,9 @@ The aim of {**ggplot2**} is to aid in visual data investigations. This focus has
 #| echo: fenced
 #| warning: false
 
+library(plotly)
+
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
 p <- ggplot2::ggplot(
   diamonds_sample, 
   ggplot2::aes(
@@ -781,6 +823,11 @@ p <- ggplot2::ggplot(
 # WebGL is a lot more efficient at rendering lots of points
 plotly::toWebGL(plotly::ggplotly(p, doubleClickDelay = 1000))
 ```
+::: {.callout-warning #wrn-plotly-toWebGL-needs-library-ploty}
+###### I do not know why the `toWebGL()` function needs `library(plotly)`
+:::
+
+
 ***
 
 In the chunk option I turned off the warnings otherwise I would get many times the following warnings.
@@ -822,7 +869,9 @@ I have added the example nonetheless hoping that I will a solution later.
 #| label: fig-02-ggally-ggcoef
 #| fig-cap: "Zooming in on a coefficient plot generated from the `GGally::ggcoef()` function"
 #| warning: false
+#| eval: false
 
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
 m <- stats::lm(
   log(price) ~ log(carat) + cut, 
   data = diamonds_sample)
@@ -838,7 +887,12 @@ plotly::ggplotly(
   plotly::toWebGL()
 ```
 
-***
+
+::: {.callout-warning #wrn-02-ggally-destroys-previous-plotly-graphs}
+###### The GGally code chunk destroys previous plotly graphs
+
+I do not know why but it turned out that the above @fig-02-ggally-ggcoef destroys previous {**plotly**} graphics. Until I know what happened I have stopped the evaluation of the above code chunk.
+:::
 
 @fig-02-ggally-ggcoef shows how injecting interactivity into this plot allows us to query exact values and zoom in on the most interesting regions. See [video](https://vimeo.com/322362701) how to do it.
 
@@ -865,6 +919,9 @@ The naniar package provides a suite of computational and visual resources for wo
 #| fig-cap: "Using the `naniar::geom_miss_point()` function to visualize missing values in relation to non-missing values. Missing values are shown in red."
 #| warning: false
 
+library(plotly)
+
+diamonds_sample <- base::readRDS("data/Chapter2/diamonds_sample.rds")
 # fake some missing data
 diamonds_sample$price_miss <- base::ifelse(
   diamonds_sample$depth > 60, diamonds_sample$price, NA)
